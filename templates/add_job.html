@@ -1,0 +1,301 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content-container" style="max-width: 800px; margin: 2rem auto; padding: 0 20px;">
+    
+    <h2 style="font-size: 1.5rem; color: #0b2b4f; margin-bottom: 1.5rem; font-weight: 600;">Post a New Job</h2>
+    
+    <!-- Flash messages for upload status -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} fade-in">
+                    {% if category == 'success' %}
+                        <i class="fas fa-check-circle"></i>
+                    {% elif category == 'danger' %}
+                        <i class="fas fa-exclamation-circle"></i>
+                    {% elif category == 'warning' %}
+                        <i class="fas fa-exclamation-triangle"></i>
+                    {% elif category == 'info' %}
+                        <i class="fas fa-info-circle"></i>
+                    {% endif %}
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    
+    <!-- Info message - Clarify that only one option can be chosen -->
+    <div class="alert alert-info" style="display: flex; align-items: center; gap: 0.5rem; border-left: 4px solid #0284c7;">
+        <i class="fas fa-info-circle" style="font-size: 1.2rem;"></i>
+        <span>You can choose <strong>either</strong> fill the form to post a job <strong>OR</strong> upload an image to the feed. These are separate actions.</span>
+    </div>
+    
+    <!-- Tab navigation - UPDATED: Clearer labels -->
+    <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem;">
+        <button id="formTab" class="btn btn-primary" style="border: none; display: flex; align-items: center; gap: 0.5rem; letter-spacing: 0.3px;" onclick="showForm()">
+            <i class="fas fa-edit"></i> FORM FILL
+        </button>
+        <button id="uploadTab" class="btn btn-outline" style="border: 1px solid #0b2b4f; display: flex; align-items: center; gap: 0.5rem; letter-spacing: 0.3px;" onclick="showUpload()">
+            <i class="fas fa-cloud-upload-alt"></i> UPLOAD IMAGE
+        </button>
+    </div>
+    
+    <!-- Form Section (Job Posting) -->
+    <div id="formSection">
+        <form method="POST" class="card" style="padding: 2rem;">
+            
+            <!-- Job Title -->
+            <div class="form-group">
+                <label class="form-label">Job Title <span style="color: #dc2626;">*</span></label>
+                <input type="text" name="title" required placeholder="e.g. Senior Instrument Engineer"
+                       class="form-control">
+            </div>
+            
+            <!-- Location -->
+            <div class="form-group">
+                <label class="form-label">Location <span style="color: #dc2626;">*</span></label>
+                <input type="text" name="location" required placeholder="e.g. Kuwait, UAE, Saudi Arabia, India"
+                       class="form-control">
+            </div>
+            
+            <!-- Industry and Project Type -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">Industry</label>
+                    <select name="industry" class="form-control">
+                        <option value="">Select Industry</option>
+                        <option value="Oil and Gas">Oil and Gas</option>
+                        <option value="Petrochemical">Petrochemical</option>
+                        <option value="Refinery">Refinery</option>
+                        <option value="Chemical">Chemical</option>
+                        <option value="Fertilizer">Fertilizer</option>
+                        <option value="Power">Power Generation</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">Project Type</label>
+                    <select name="project_type" class="form-control">
+                        <option value="">Select Project Type</option>
+                        <option value="Shutdown">Shutdown</option>
+                        <option value="Maintenance">Maintenance</option>
+                        <option value="Commissioning">Commissioning</option>
+                        <option value="Construction">Construction</option>
+                        <option value="Turnaround">Turnaround</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Duration -->
+            <div class="form-group">
+                <label class="form-label">Duration</label>
+                <select name="duration" class="form-control">
+                    <option value="">Select Duration</option>
+                    <option value="Short-Term">Short-Term (1-3 months)</option>
+                    <option value="Medium-Term">Medium-Term (3-12 months)</option>
+                    <option value="Long-Term">Long-Term (12+ months)</option>
+                    <option value="Permanent">Permanent</option>
+                </select>
+            </div>
+            
+            <!-- Salary Section with Currency -->
+            <div class="form-group">
+                <label class="form-label">Salary</label>
+                <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+                    <!-- Currency Dropdown -->
+                    <select id="currencySelect" name="currency" class="form-control" style="width: 150px;">
+                        <option value="$">🇺🇸 USD ($)</option>
+                        <option value="KD">🇰🇼 KWD (KD)</option>
+                        <option value="SAR">🇸🇦 SAR (﷼)</option>
+                        <option value="AED">🇦🇪 AED (د.إ)</option>
+                        <option value="QAR">🇶🇦 QAR (﷼)</option>
+                        <option value="OMR">🇴🇲 OMR (﷼)</option>
+                        <option value="BHD">🇧🇭 BHD (د.ب)</option>
+                        <option value="EGP">🇪🇬 EGP (£)</option>
+                        <option value="INR">🇮🇳 INR (₹)</option>
+                        <option value="GBP">🇬🇧 GBP (£)</option>
+                        <option value="EUR">🇪🇺 EUR (€)</option>
+                        <option value="CAD">🇨🇦 CAD ($)</option>
+                        <option value="AUD">🇦🇺 AUD ($)</option>
+                        <option value="SGD">🇸🇬 SGD ($)</option>
+                    </select>
+                    
+                    <!-- Minimum Salary -->
+                    <div style="flex: 1; min-width: 120px; display: flex; align-items: center;">
+                        <span id="currencySymbol" style="padding: 0.8rem; background: #f1f5f9; border: 2px solid #cbd5e1; border-right: none; border-radius: 8px 0 0 8px; min-width: 40px; text-align: center; font-weight: 600;">$</span>
+                        <input type="number" name="salary_min" placeholder="Minimum"
+                               class="form-control" style="border-left: none; border-radius: 0 8px 8px 0;">
+                    </div>
+                    
+                    <!-- Maximum Salary -->
+                    <div style="flex: 1; min-width: 120px; display: flex; align-items: center;">
+                        <span id="currencySymbol2" style="padding: 0.8rem; background: #f1f5f9; border: 2px solid #cbd5e1; border-right: none; border-radius: 8px 0 0 8px; min-width: 40px; text-align: center; font-weight: 600;">$</span>
+                        <input type="number" name="salary_max" placeholder="Maximum"
+                               class="form-control" style="border-left: none; border-radius: 0 8px 8px 0;">
+                    </div>
+                </div>
+                <p style="color: #64748b; font-size: 0.8rem; margin-top: 0.5rem;">Select currency and enter salary range (optional)</p>
+            </div>
+            
+            <!-- Experience -->
+            <div class="form-group">
+                <label class="form-label">Experience Required (years)</label>
+                <input type="number" name="experience_years" placeholder="e.g. 5"
+                       class="form-control">
+            </div>
+            
+            <!-- Job Description -->
+            <div class="form-group">
+                <label class="form-label">Job Description <span style="color: #dc2626;">*</span></label>
+                <textarea name="description" rows="6" required
+                          placeholder="Provide detailed job description, responsibilities, requirements, etc."
+                          class="form-control"></textarea>
+            </div>
+            
+            <!-- Contact Info -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">Contact Email</label>
+                    <input type="email" name="contact_email" placeholder="hr@company.com"
+                           class="form-control">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">Contact Phone</label>
+                    <input type="text" name="contact_phone" placeholder="+965 1234 5678"
+                           class="form-control">
+                </div>
+            </div>
+            
+            <!-- Apply Link -->
+            <div class="form-group">
+                <label class="form-label">External Apply Link</label>
+                <input type="url" name="apply_link" placeholder="https://company.com/careers/job123"
+                       class="form-control">
+                <p style="color: #64748b; font-size: 0.8rem; margin-top: 0.3rem;">Leave empty for email/phone contact</p>
+            </div>
+            
+            <!-- Show if job image is uploaded (for job posting) -->
+            {% if session.get('uploaded_image') %}
+            <div class="alert alert-success" style="margin-bottom: 1rem; display: flex; align-items: center; gap: 1rem;">
+                <i class="fas fa-check-circle" style="color: #10b981; font-size: 1.5rem;"></i>
+                <span>Job image uploaded: <strong>{{ session.get('uploaded_image') }}</strong></span>
+            </div>
+            {% endif %}
+            
+            <!-- Submit Job Button -->
+            <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">
+                <i class="fas fa-paper-plane"></i> Post Job
+            </button>
+        </form>
+    </div>
+    
+    <!-- Upload Section - FOR FEED UPLOADS (Independent from jobs) -->
+    <div id="uploadSection" style="display: none;">
+        <div class="card" style="text-align: center; padding: 2rem; border: 2px dashed #cbd5e1; margin-bottom: 2rem;">
+            <i class="fas fa-cloud-upload-alt" style="font-size: 2.5rem; color: #94a3b8; margin-bottom: 0.5rem;"></i>
+            <h3 style="font-size: 1.2rem; color: #1e293b; margin-bottom: 0.3rem;">Upload Image to Feed</h3>
+            <p style="color: #64748b; margin-bottom: 1rem;">Share industry photos independently (not linked to any job)</p>
+            
+            <form id="feedUploadForm" action="/upload-feed-image" method="POST" enctype="multipart/form-data" style="max-width: 400px; margin: 0 auto;">
+                <!-- Image Title -->
+                <div class="form-group">
+                    <input type="text" name="title" placeholder="Image title (optional)" 
+                           class="form-control">
+                </div>
+                
+                <!-- Image Description -->
+                <div class="form-group">
+                    <textarea name="description" rows="2" placeholder="Description (optional)" 
+                              class="form-control"></textarea>
+                </div>
+                
+                <!-- File Input with Preview -->
+                <div class="form-group">
+                    <input type="file" name="file" accept="image/*" id="feedImage" required
+                           class="form-control" style="padding: 0.5rem;"
+                           onchange="previewFeedImage(this)">
+                </div>
+                
+                <!-- Image Preview -->
+                <div id="feedImagePreview" style="margin: 1rem auto; max-width: 200px; display: none;">
+                    <img id="feedPreview" src="#" alt="Preview" style="width: 100%; border-radius: 8px; border: 2px solid #0b2b4f;">
+                </div>
+                
+                <!-- Info note about image feed -->
+                <p style="color: #94a3b8; font-size: 0.8rem; margin-bottom: 1rem;">
+                    <i class="fas fa-info-circle"></i> Uploaded images will appear in the home feed after admin approval.
+                </p>
+                
+                <!-- Upload Button -->
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    <i class="fas fa-upload"></i> Upload Image
+                </button>
+            </form>
+            
+            <!-- Upload Status -->
+            <div id="uploadStatus" style="margin-top: 1rem; display: none;"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function showForm() {
+        document.getElementById('formSection').style.display = 'block';
+        document.getElementById('uploadSection').style.display = 'none';
+        document.getElementById('formTab').className = 'btn btn-primary';
+        document.getElementById('uploadTab').className = 'btn btn-outline';
+    }
+    
+    function showUpload() {
+        document.getElementById('formSection').style.display = 'none';
+        document.getElementById('uploadSection').style.display = 'block';
+        document.getElementById('uploadTab').className = 'btn btn-primary';
+        document.getElementById('formTab').className = 'btn btn-outline';
+    }
+    
+    // Update currency symbols when selection changes
+    document.getElementById('currencySelect').addEventListener('change', function() {
+        const currency = this.value;
+        document.getElementById('currencySymbol').textContent = currency;
+        document.getElementById('currencySymbol2').textContent = currency;
+    });
+    
+    // Preview feed image before upload
+    function previewFeedImage(input) {
+        const preview = document.getElementById('feedImagePreview');
+        const img = document.getElementById('feedPreview');
+        
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                img.src = e.target.result;
+                preview.style.display = 'block';
+            }
+            
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+    
+    // Handle feed upload form submission with loading state
+    document.getElementById('feedUploadForm')?.addEventListener('submit', function(e) {
+        const btn = this.querySelector('button[type="submit"]');
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+        btn.disabled = true;
+    });
+    
+    // Auto-hide flash messages after 5 seconds
+    setTimeout(function() {
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(function(alert) {
+            alert.style.transition = 'opacity 0.5s ease';
+            alert.style.opacity = '0';
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.style.display = 'none';
+                }
+            }, 500);
+        });
+    }, 5000);
+</script>
+{% endblock %}

@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content-container" style="max-width: 1400px; margin: 0 auto; padding: 1.5rem 15px;">
+    
+    <!-- Header Section with Welcome and Actions -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
+                <div style="background: linear-gradient(135deg, #0b2b4f, #1e4b7a); width: 50px; height: 50px; border-radius: 15px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(11,43,79,0.2);">
+                    <i class="fas fa-crown" style="color: #f59e0b; font-size: 1.5rem;"></i>
+                </div>
+                <h2 style="font-size: 2rem; color: #0b2b4f; font-weight: 700; margin: 0; letter-spacing: -0.5px;">Admin Dashboard</h2>
+            </div>
+            <p style="color: #64748b; font-size: 1rem; margin-left: 4rem; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-user-shield" style="color: #0b2b4f;"></i>
+                Welcome back, <strong style="color: #0b2b4f;">Admin</strong> 
+                <span style="color: #94a3b8;">• {{ session.get('username', 'Administrator') }}</span>
+                <span style="background: #e2e8f0; color: #0b2b4f; padding: 0.3rem 1.2rem; border-radius: 30px; font-size: 0.85rem; margin-left: 1rem; display: inline-flex; align-items: center; gap: 0.5rem;">
+                    <i class="far fa-calendar-alt"></i> {{ now().strftime('%d %B %Y') }}
+                </span>
+            </p>
+        </div>
+        <a href="/poster/add" 
+           class="btn btn-primary btn-lg"
+           style="display: inline-flex; align-items: center; gap: 0.8rem; box-shadow: 0 4px 15px rgba(11,43,79,0.2);">
+            <i class="fas fa-plus-circle" style="font-size: 1.2rem;"></i> Post New Job
+        </a>
+    </div>
+    
+    <!-- Stats Cards Grid - 6 Cards -->
+    <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 1.2rem; margin-bottom: 2rem;">
+        
+        <!-- Card 1: Total Employers (WITH LINK) -->
+        <a href="/admin/all-employers" style="text-decoration: none;">
+            <div class="card" style="padding: 1.2rem; height: 100%; position: relative; overflow: hidden; cursor: pointer; transition: all 0.3s ease;"
+               onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 20px 30px -8px rgba(79,172,254,0.3)'; this.style.borderColor='#4facfe';"
+               onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='var(--box-shadow)'; this.style.borderColor='var(--gray-300)';">
+                <div style="position: absolute; top: -10px; right: -10px; width: 80px; height: 80px; background: radial-gradient(circle, rgba(79,172,254,0.1) 0%, rgba(255,255,255,0) 70%); border-radius: 50%;"></div>
+                <div style="display: flex; flex-direction: column; gap: 0.8rem; position: relative; z-index: 1;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="background: linear-gradient(135deg, #4facfe, #00f2fe); width: 45px; height: 45px; border-radius: 15px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(79,172,254,0.3);">
+                            <i class="fas fa-building" style="color: white; font-size: 1.3rem;"></i>
+                        </div>
+                        <span style="background: rgba(79,172,254,0.1); color: #4facfe; padding: 0.2rem 0.8rem; border-radius: 30px; font-size: 0.7rem; font-weight: 600; border: 1px solid rgba(79,172,254,0.2);">
+                            <i class="fas fa-arrow-right"></i> View
+                        </span>
+                    </div>
+                    <div>
+                        <p style="color: #64748b; font-size: 0.8rem; margin-bottom: 0.2rem; font-weight: 500;">TOTAL EMPLOYERS</p>
+                        <h3 style="font-size: 2.2rem; font-weight: 700; color: #0b2b4f; margin: 0; line-height: 1.2;">{{ total_employers_count }}</h3>
+                        <p style="color: #94a3b8; font-size: 0.7rem; margin-top: 0.2rem;">
+                            <i class="fas fa-check-circle" style="color: #10b981;"></i> Registered companies
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </a>
+        
+        <!-- Card 2: Total Jobs (NO LINK) -->
+        <div class="card" style="padding: 1.2rem; height: 100%; position: relative; overflow: hidden;">
+            <div style="position: absolute; top: -10px; right: -10px; width: 80px; height: 80px; background: radial-gradient(circle, rgba(67,233,123,0.1) 0%, rgba(255,255,255,0) 70%); border-radius: 50%;"></div>
+            <div style="display: flex; flex-direction: column; gap: 0.8rem; position: relative; z-index: 1;">
+                <div style="background: linear-gradient(135deg, #43e97b, #38f9d7); width: 45px; height: 45px; border-radius: 15px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(67,233,123,0.3);">
+                    <i class="fas fa-briefcase" style="color: white; font-size: 1.3rem;"></i>
+                </div>
+                <div>
+                    <p style="color: #64748b; font-size: 0.8rem; margin-bottom: 0.2rem; font-weight: 500;">TOTAL JOBS</p>
+                    <h3 style="font-size: 2.2rem; font-weight: 700; color: #0b2b4f; margin: 0; line-height: 1.2;">{{ total_jobs_count }}</h3>
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.3rem;">
+                        <span class="badge badge-success">{{ approved_jobs_count }} approved</span>
+                        <span class="badge badge-warning">{{ pending_jobs_count }} pending</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Card 3: Total Images (NO LINK) -->
+        <div class="card" style="padding: 1.2rem; height: 100%; position: relative; overflow: hidden;">
+            <div style="position: absolute; top: -10px; right: -10px; width: 80px; height: 80px; background: radial-gradient(circle, rgba(243,87,108,0.1) 0%, rgba(255,255,255,0) 70%); border-radius: 50%;"></div>
+            <div style="display: flex; flex-direction: column; gap: 0.8rem; position: relative; z-index: 1;">
+                <div style="background: linear-gradient(135deg, #f093fb, #f5576c); width: 45px; height: 45px; border-radius: 15px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(243,87,108,0.3);">
+                    <i class="fas fa-images" style="color: white; font-size: 1.3rem;"></i>
+                </div>
+                <div>
+                    <p style="color: #64748b; font-size: 0.8rem; margin-bottom: 0.2rem; font-weight: 500;">TOTAL IMAGES</p>
+                    <h3 style="font-size: 2.2rem; font-weight: 700; color: #0b2b4f; margin: 0; line-height: 1.2;">{{ total_images_count }}</h3>
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.3rem;">
+                        <span class="badge badge-success">{{ total_images_count - pending_images_count }} approved</span>
+                        <span class="badge badge-warning">{{ pending_images_count }} pending</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Card 4: Total Views (NO LINK) -->
+        <div class="card" style="padding: 1.2rem; height: 100%; position: relative; overflow: hidden;">
+            <div style="position: absolute; top: -10px; right: -10px; width: 80px; height: 80px; background: radial-gradient(circle, rgba(245,158,11,0.1) 0%, rgba(255,255,255,0) 70%); border-radius: 50%;"></div>
+            <div style="display: flex; flex-direction: column; gap: 0.8rem; position: relative; z-index: 1;">
+                <div style="background: linear-gradient(135deg, #f59e0b, #f97316); width: 45px; height: 45px; border-radius: 15px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(245,158,11,0.3);">
+                    <i class="fas fa-eye" style="color: white; font-size: 1.3rem;"></i>
+                </div>
+                <div>
+                    <p style="color: #64748b; font-size: 0.8rem; margin-bottom: 0.2rem; font-weight: 500;">TOTAL VIEWS</p>
+                    <h3 style="font-size: 2.2rem; font-weight: 700; color: #0b2b4f; margin: 0; line-height: 1.2;">{{ total_views_count }}</h3>
+                    <p style="color: #94a3b8; font-size: 0.7rem; margin-top: 0.2rem;">
+                        <i class="fas fa-chart-line"></i> Across all jobs & images
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Card 5: Pending Jobs (WITH LINK) -->
+        <a href="/admin/pending-jobs" style="text-decoration: none;">
+            <div class="card" style="padding: 1.2rem; height: 100%; position: relative; overflow: hidden; cursor: pointer; transition: all 0.3s ease;"
+               onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 20px 30px -8px rgba(245,158,11,0.3)'; this.style.borderColor='#f59e0b';"
+               onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='var(--box-shadow)'; this.style.borderColor='var(--gray-300)';">
+                <div style="position: absolute; top: -10px; right: -10px; width: 80px; height: 80px; background: radial-gradient(circle, rgba(245,158,11,0.1) 0%, rgba(255,255,255,0) 70%); border-radius: 50%;"></div>
+                <div style="display: flex; flex-direction: column; gap: 0.8rem; position: relative; z-index: 1;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="background: linear-gradient(135deg, #f59e0b, #f97316); width: 45px; height: 45px; border-radius: 15px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(245,158,11,0.3);">
+                            <i class="fas fa-clock" style="color: white; font-size: 1.3rem;"></i>
+                        </div>
+                        <span style="background: rgba(245,158,11,0.1); color: #f59e0b; padding: 0.2rem 0.8rem; border-radius: 30px; font-size: 0.7rem; font-weight: 600; border: 1px solid rgba(245,158,11,0.2);">
+                            <i class="fas fa-arrow-right"></i> Manage
+                        </span>
+                    </div>
+                    <div>
+                        <p style="color: #64748b; font-size: 0.8rem; margin-bottom: 0.2rem; font-weight: 500;">PENDING JOBS</p>
+                        <h3 style="font-size: 2.2rem; font-weight: 700; color: #0b2b4f; margin: 0; line-height: 1.2;">{{ pending_jobs_count }}</h3>
+                        <p style="color: #94a3b8; font-size: 0.7rem; margin-top: 0.2rem;">
+                            <i class="fas fa-hourglass-half"></i> Awaiting approval
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </a>
+        
+        <!-- Card 6: Pending Images (WITH LINK) -->
+        <a href="/admin/pending-images" style="text-decoration: none;">
+            <div class="card" style="padding: 1.2rem; height: 100%; position: relative; overflow: hidden; cursor: pointer; transition: all 0.3s ease;"
+               onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 20px 30px -8px rgba(245,158,11,0.3)'; this.style.borderColor='#f59e0b';"
+               onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='var(--box-shadow)'; this.style.borderColor='var(--gray-300)';">
+                <div style="position: absolute; top: -10px; right: -10px; width: 80px; height: 80px; background: radial-gradient(circle, rgba(245,158,11,0.1) 0%, rgba(255,255,255,0) 70%); border-radius: 50%;"></div>
+                <div style="display: flex; flex-direction: column; gap: 0.8rem; position: relative; z-index: 1;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="background: linear-gradient(135deg, #f59e0b, #f97316); width: 45px; height: 45px; border-radius: 15px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(245,158,11,0.3);">
+                            <i class="fas fa-images" style="color: white; font-size: 1.3rem;"></i>
+                        </div>
+                        <span style="background: rgba(245,158,11,0.1); color: #f59e0b; padding: 0.2rem 0.8rem; border-radius: 30px; font-size: 0.7rem; font-weight: 600; border: 1px solid rgba(245,158,11,0.2);">
+                            <i class="fas fa-arrow-right"></i> Manage
+                        </span>
+                    </div>
+                    <div>
+                        <p style="color: #64748b; font-size: 0.8rem; margin-bottom: 0.2rem; font-weight: 500;">PENDING IMAGES</p>
+                        <h3 style="font-size: 2.2rem; font-weight: 700; color: #0b2b4f; margin: 0; line-height: 1.2;">{{ pending_images_count }}</h3>
+                        <p style="color: #94a3b8; font-size: 0.7rem; margin-top: 0.2rem;">
+                            <i class="fas fa-hourglass-half"></i> Awaiting approval
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+    
+    <!-- Quick Stats Summary -->
+    <div class="card" style="padding: 1.2rem; margin-top: 1rem;">
+        <div style="display: flex; gap: 3rem; flex-wrap: wrap; justify-content: center;">
+            <div style="text-align: center; padding: 0 1rem;">
+                <div style="font-size: 1.8rem; font-weight: 700; color: #0b2b4f; line-height: 1.2;">{{ approved_jobs_count }}</div>
+                <div style="color: #64748b; font-size: 0.85rem; font-weight: 500;">Approved Jobs</div>
+                <div style="width: 40px; height: 3px; background: #10b981; margin: 0.5rem auto 0; border-radius: 2px;"></div>
+            </div>
+            <div style="text-align: center; padding: 0 1rem;">
+                <div style="font-size: 1.8rem; font-weight: 700; color: #0b2b4f; line-height: 1.2;">{{ total_images_count - pending_images_count }}</div>
+                <div style="color: #64748b; font-size: 0.85rem; font-weight: 500;">Approved Images</div>
+                <div style="width: 40px; height: 3px; background: #f59e0b; margin: 0.5rem auto 0; border-radius: 2px;"></div>
+            </div>
+            <div style="text-align: center; padding: 0 1rem;">
+                <div style="font-size: 1.8rem; font-weight: 700; color: #0b2b4f; line-height: 1.2;">{{ total_employers_count }}</div>
+                <div style="color: #64748b; font-size: 0.85rem; font-weight: 500;">Active Employers</div>
+                <div style="width: 40px; height: 3px; background: #4facfe; margin: 0.5rem auto 0; border-radius: 2px;"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions Section -->
+    <div style="margin-top: 2rem; display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+        <div class="card" style="padding: 1.5rem;">
+            <h3 style="font-size: 1.1rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-tasks" style="color: #f59e0b;"></i> Quick Actions
+            </h3>
+            <div style="display: flex; flex-direction: column; gap: 0.8rem;">
+                <a href="/admin/pending-jobs" class="btn btn-outline" style="display: flex; align-items: center; justify-content: space-between;">
+                    <span><i class="fas fa-clock"></i> Review Pending Jobs</span>
+                    <span class="badge badge-warning">{{ pending_jobs_count }}</span>
+                </a>
+                <a href="/admin/pending-images" class="btn btn-outline" style="display: flex; align-items: center; justify-content: space-between;">
+                    <span><i class="fas fa-images"></i> Review Pending Images</span>
+                    <span class="badge badge-warning">{{ pending_images_count }}</span>
+                </a>
+                <a href="/admin/all-employers" class="btn btn-outline" style="display: flex; align-items: center; justify-content: space-between;">
+                    <span><i class="fas fa-building"></i> Manage Employers</span>
+                    <span class="badge badge-gray">{{ total_employers_count }}</span>
+                </a>
+            </div>
+        </div>
+        
+        <div class="card" style="padding: 1.5rem;">
+            <h3 style="font-size: 1.1rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-chart-bar" style="color: #4facfe;"></i> System Status
+            </h3>
+            <div style="display: flex; flex-direction: column; gap: 0.8rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: #64748b;">Database:</span>
+                    <span class="badge badge-success">Connected</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: #64748b;">Email Service:</span>
+                    <span class="badge badge-success">Active</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: #64748b;">Storage Used:</span>
+                    <span style="color: #0b2b4f; font-weight: 500;">{{ total_images_count }} images</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: #64748b;">Last Crawl:</span>
+                    <span style="color: #0b2b4f; font-weight: 500;">{{ now().strftime('%H:%M %d/%m/%Y') }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

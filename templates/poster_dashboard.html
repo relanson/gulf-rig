@@ -1,0 +1,260 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content-container" style="max-width: 1200px; margin: 0 auto; padding: 2rem 20px;">
+    
+    <!-- Header Section -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <h2 style="font-size: 1.8rem; color: #0b2b4f; margin-bottom: 0.3rem; font-weight: 600;">Employer Dashboard</h2>
+            <p style="color: #64748b; font-size: 1rem;">
+                <i class="fas fa-user-circle" style="margin-right: 0.5rem; color: #0b2b4f;"></i>
+                Welcome back, <strong>{{ session.get('username', 'Employer') }}</strong>
+                {% if session.get('company_name') %}
+                <span style="color: #94a3b8;"> | {{ session.get('company_name') }}</span>
+                {% endif %}
+            </p>
+        </div>
+        <a href="/poster/add" 
+           class="btn btn-primary btn-lg"
+           style="display: inline-flex; align-items: center; gap: 0.5rem;">
+            <i class="fas fa-plus-circle"></i> Post New Job
+        </a>
+    </div>
+    
+    <!-- Pending Approval Warning -->
+    {% if status != 'approved' %}
+    <div class="alert alert-warning" style="margin-bottom: 2rem;">
+        <i class="fas fa-clock"></i>
+        <div>
+            <strong>Account Pending Approval</strong>
+            <p style="margin: 0.2rem 0 0 0; font-size: 0.9rem;">You can post jobs, but they won't be visible to job seekers until approved by admin.</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Email Verification Warning -->
+    {% if not email_verified %}
+    <div class="alert alert-warning" style="margin-bottom: 2rem; display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <i class="fas fa-envelope" style="font-size: 1.2rem;"></i>
+            <div>
+                <strong>Email Not Verified</strong>
+                <p style="margin: 0.2rem 0 0 0; font-size: 0.9rem;">Please verify your email to start posting jobs.</p>
+            </div>
+        </div>
+        <a href="/send-otp" class="btn btn-warning btn-sm" style="white-space: nowrap;">
+            Verify Now
+        </a>
+    </div>
+    {% endif %}
+    
+    <!-- Stats Cards -->
+    <div class="grid-4" style="margin-bottom: 2.5rem;">
+        <!-- Total Jobs Card -->
+        <div class="card" style="padding: 1.2rem;">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <div style="background: #e2e8f0; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-briefcase" style="color: #0b2b4f; font-size: 1.2rem;"></i>
+                </div>
+                <div>
+                    <h3 style="font-size: 1.8rem; color: #0b2b4f; margin: 0; line-height: 1.2;">{{ jobs|length }}</h3>
+                    <p style="color: #64748b; margin: 0; font-size: 0.8rem;">Total Jobs</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Total Images Card -->
+        <div class="card" style="padding: 1.2rem;">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <div style="background: #f59e0b; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-images" style="color: white; font-size: 1.2rem;"></i>
+                </div>
+                <div>
+                    <h3 style="font-size: 1.8rem; color: #f59e0b; margin: 0; line-height: 1.2;">{{ total_images_count }}</h3>
+                    <p style="color: #64748b; margin: 0; font-size: 0.8rem;">Total Images</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Pending Jobs Card -->
+        <div class="card" style="padding: 1.2rem;">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <div style="background: #fff3cd; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-clock" style="color: #f59e0b; font-size: 1.2rem;"></i>
+                </div>
+                <div>
+                    <h3 style="font-size: 1.8rem; color: #f59e0b; margin: 0; line-height: 1.2;">{{ pending_jobs_count }}</h3>
+                    <p style="color: #64748b; margin: 0; font-size: 0.8rem;">Pending Jobs</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Pending Images Card -->
+        <div class="card" style="padding: 1.2rem;">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <div style="background: #fef3c7; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-clock" style="color: #f59e0b; font-size: 1.2rem;"></i>
+                </div>
+                <div>
+                    <h3 style="font-size: 1.8rem; color: #f59e0b; margin: 0; line-height: 1.2;">{{ pending_images_count }}</h3>
+                    <p style="color: #64748b; margin: 0; font-size: 0.8rem;">Pending Images</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Jobs Section -->
+    <h3 style="font-size: 1.3rem; color: #1e293b; font-weight: 600; margin-bottom: 1.5rem;">Your Job Postings</h3>
+    
+    {% if jobs %}
+    <div style="display: flex; flex-direction: column; gap: 1.2rem; margin-bottom: 3rem;">
+        {% for job in jobs %}
+        <div class="card" style="padding: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap; gap: 1rem;">
+                <div style="flex: 1;">
+                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
+                        <h4 style="margin: 0; font-size: 1.1rem;">
+                            <a href="/job/{{ job.id }}" style="color: #0b2b4f; text-decoration: none;">{{ job.title }}</a>
+                        </h4>
+                        {% if job.status == 'approved' %}
+                        <span class="badge badge-success">✓ Approved</span>
+                        {% else %}
+                        <span class="badge badge-warning">⏳ Pending</span>
+                        {% endif %}
+                        {% if job.source == 'crawler' %}
+                        <span class="badge badge-gray">AUTO</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div style="display: flex; flex-wrap: wrap; gap: 1.5rem; color: #64748b; font-size: 0.9rem; margin-bottom: 0.5rem;">
+                        <span><i class="fas fa-map-marker-alt" style="color: #0b2b4f;"></i> {{ job.location }}</span>
+                        <span><i class="fas fa-calendar-alt" style="color: #0b2b4f;"></i> Posted: {{ job.created_at[:10] }}</span>
+                        <span><i class="fas fa-hourglass-end" style="color: #0b2b4f;"></i> Expires: {{ job.expiry_date }}</span>
+                    </div>
+                    
+                    <p style="color: #475569; margin-top: 0.5rem;">{{ job.description[:150] }}{% if job.description|length > 150 %}...{% endif %}</p>
+                    
+                    <!-- Show image indicator if job has image -->
+                    {% if job.image_filename %}
+                    <div style="margin-top: 0.5rem; color: #0b2b4f; font-size: 0.8rem;">
+                        <i class="fas fa-image"></i> Has image attachment
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Salary if available -->
+                    {% if job.salary_min %}
+                    <div class="job-salary-badge" style="margin-top: 0.5rem;">
+                        {% set currency = job.currency or '$' %}
+                        {{ currency }}{{ job.salary_min }}{% if job.salary_max %} - {{ job.salary_max }}{% endif %}/mo
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div style="display: flex; gap: 0.5rem;">
+                    <a href="/job/{{ job.id }}" class="btn btn-outline btn-sm">
+                        <i class="fas fa-eye"></i> View
+                    </a>
+                    <a href="/poster/delete-job/{{ job.id }}" 
+                       class="btn btn-danger btn-sm"
+                       onclick="return confirm('Delete this job?');">
+                        <i class="fas fa-trash"></i> Delete
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="card" style="text-align: center; padding: 3rem; margin-bottom: 3rem;">
+        <i class="fas fa-briefcase" style="font-size: 3rem; color: #cbd5e1; margin-bottom: 1rem;"></i>
+        <p style="color: #64748b;">No jobs posted yet.</p>
+        <a href="/poster/add" class="btn btn-primary" style="margin-top: 1rem;">Post your first job →</a>
+    </div>
+    {% endif %}
+    
+    <!-- Images Section -->
+    <h3 style="font-size: 1.3rem; color: #1e293b; font-weight: 600; margin: 2rem 0 1.5rem;">Your Uploaded Images</h3>
+    
+    {% if images %}
+    <div class="grid-auto" style="gap: 1.5rem;">
+        {% for image in images %}
+        <div class="card" style="padding: 0; overflow: hidden;">
+            <div style="position: relative; width: 100%; padding-bottom: 75%; background: #f8fafc; cursor: pointer;" 
+                 onclick="openImageModal('{{ url_for('static', filename='uploads/' + image.filename) }}')">
+                <img src="{{ url_for('static', filename='uploads/' + image.filename) }}" 
+                     alt="{{ image.title or 'Uploaded image' }}"
+                     style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
+            </div>
+            <div style="padding: 1rem;">
+                {% if image.title %}
+                <h4 style="font-size: 1rem; color: #0b2b4f; margin-bottom: 0.3rem;">{{ image.title }}</h4>
+                {% endif %}
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
+                    <span style="font-size: 0.8rem; color: #64748b;">
+                        <i class="fas fa-calendar-alt"></i> {{ image.created_at[:10] }}
+                    </span>
+                    {% if image.status == 'approved' %}
+                    <span class="badge badge-success">✓ Approved</span>
+                    {% else %}
+                    <span class="badge badge-warning">⏳ Pending</span>
+                    {% endif %}
+                </div>
+                {% if image.description %}
+                <p style="color: #475569; font-size: 0.85rem; margin: 0.5rem 0;">{{ image.description[:100] }}</p>
+                {% endif %}
+                {% if image.status == 'pending' %}
+                <p style="color: #f59e0b; font-size: 0.75rem; margin-top: 0.5rem; font-style: italic; display: flex; align-items: center; gap: 0.3rem;">
+                    <i class="fas fa-clock"></i> Waiting for admin approval
+                </p>
+                {% endif %}
+                <div style="display: flex; gap: 0.5rem; margin-top: 0.8rem;">
+                    <a href="/poster/delete-image/{{ image.id }}" 
+                       class="btn btn-danger btn-sm"
+                       style="display: inline-flex; align-items: center; gap: 0.3rem; width: 100%; justify-content: center;"
+                       onclick="return confirm('Delete this image?');">
+                        <i class="fas fa-trash"></i> Delete
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="card" style="text-align: center; padding: 3rem;">
+        <i class="fas fa-images" style="font-size: 3rem; color: #cbd5e1; margin-bottom: 1rem;"></i>
+        <p style="color: #64748b;">No images uploaded yet.</p>
+        <a href="/poster/add" class="btn btn-primary" style="margin-top: 1rem;">Upload your first image →</a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Image Modal for Fullscreen View -->
+<div id="imageModal" class="modal" onclick="closeImageModal(event)">
+    <img id="modalImage" src="" alt="Full size image">
+    <button class="modal-close" onclick="closeImageModal()">✕</button>
+</div>
+
+<script>
+    function openImageModal(imgSrc) {
+        document.getElementById('modalImage').src = imgSrc;
+        document.getElementById('imageModal').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+    
+    function closeImageModal(event) {
+        if (event && event.target.id !== 'imageModal' && event.target.className !== 'modal-close') {
+            return;
+        }
+        document.getElementById('imageModal').style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+    
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeImageModal();
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content-container" style="max-width: 1000px; margin: 2rem auto; padding: 0 20px;">
+    
+    <!-- Header -->
+    <div style="text-align: center; margin-bottom: 3rem;">
+        <div style="background: #0b2b4f; width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+            <i class="fas fa-headset" style="color: white; font-size: 2rem;"></i>
+        </div>
+        <h1 style="font-size: 2.5rem; color: #0b2b4f; margin-bottom: 0.5rem; font-weight: 700;">Contact Us</h1>
+        <p style="color: #64748b; font-size: 1.1rem; max-width: 600px; margin: 0 auto;">Have questions? We're here to help. Reach out to us anytime.</p>
+    </div>
+    
+    <!-- Contact Grid -->
+    <div class="grid-2" style="margin-bottom: 3rem;">
+        <!-- Contact Form -->
+        <div class="card" style="padding: 2rem;">
+            <h3 style="font-size: 1.3rem; color: #0b2b4f; margin-bottom: 1.5rem;">Send us a Message</h3>
+            
+            <form method="POST" action="/send-message">
+                <div class="form-group">
+                    <label class="form-label">Your Name</label>
+                    <input type="text" name="name" required class="form-control">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" name="email" required class="form-control">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Subject</label>
+                    <select name="subject" class="form-control">
+                        <option>General Inquiry</option>
+                        <option>Job Posting Help</option>
+                        <option>Account Support</option>
+                        <option>Partnership Opportunity</option>
+                        <option>Report an Issue</option>
+                        <option>Other</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Message</label>
+                    <textarea name="message" rows="5" required class="form-control"></textarea>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">
+                    <i class="fas fa-paper-plane"></i> Send Message
+                </button>
+            </form>
+        </div>
+        
+        <!-- Contact Info -->
+        <div>
+            <!-- Direct Contact -->
+            <div class="card" style="padding: 2rem; margin-bottom: 2rem;">
+                <h3 style="font-size: 1.3rem; color: #0b2b4f; margin-bottom: 1.5rem;">Get in Touch Directly</h3>
+                
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+                    <div style="background: #f1f5f9; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-envelope" style="color: #0b2b4f; font-size: 1.2rem;"></i>
+                    </div>
+                    <div>
+                        <p style="font-weight: 500; color: #1e293b;">Email Us</p>
+                        <a href="mailto:support@jobportal.com" style="color: #0b2b4f; text-decoration: none;">support@jobportal.com</a>
+                    </div>
+                </div>
+                
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+                    <div style="background: #f1f5f9; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-phone-alt" style="color: #0b2b4f; font-size: 1.2rem;"></i>
+                    </div>
+                    <div>
+                        <p style="font-weight: 500; color: #1e293b;">Call Us</p>
+                        <a href="tel:+96512345678" style="color: #0b2b4f; text-decoration: none;">+965 1234 5678</a>
+                        <p style="color: #64748b; font-size: 0.8rem;">Sun-Thu, 9am-5pm GST</p>
+                    </div>
+                </div>
+                
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div style="background: #f1f5f9; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-map-marker-alt" style="color: #0b2b4f; font-size: 1.2rem;"></i>
+                    </div>
+                    <div>
+                        <p style="font-weight: 500; color: #1e293b;">Office</p>
+                        <p style="color: #475569;">Kuwait City, Kuwait</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Office Hours -->
+            <div class="card" style="padding: 2rem; margin-bottom: 2rem;">
+                <h3 style="font-size: 1.3rem; color: #0b2b4f; margin-bottom: 1rem;">Office Hours</h3>
+                
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span style="color: #475569;">Sunday - Thursday</span>
+                    <span style="color: #0b2b4f; font-weight: 500;">9:00 AM - 5:00 PM</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span style="color: #475569;">Friday - Saturday</span>
+                    <span style="color: #64748b;">Closed</span>
+                </div>
+                <p style="color: #64748b; font-size: 0.8rem; margin-top: 1rem;">* GCC time zone (GMT+3)</p>
+            </div>
+            
+            <!-- Social Links -->
+            <div class="card" style="padding: 2rem;">
+                <h3 style="font-size: 1.3rem; color: #0b2b4f; margin-bottom: 1rem;">Follow Us</h3>
+                <div style="display: flex; gap: 1rem;">
+                    <a href="#" class="share-icon linkedin" style="width: 45px; height: 45px;"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="#" class="share-icon twitter" style="width: 45px; height: 45px;"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="share-icon facebook" style="width: 45px; height: 45px;"><i class="fab fa-facebook-f"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Map (Optional) -->
+    <div class="card" style="padding: 1rem; margin-bottom: 3rem;">
+        <iframe 
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3478.5!2d47.9!3d29.3!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjnCsDE4JzAwLjAiTiA0N8KwNTQnMDAuMCJF!5e0!3m2!1sen!2skw!4v1234567890"
+            width="100%" 
+            height="300" 
+            style="border:0; border-radius: 12px;" 
+            allowfullscreen="" 
+            loading="lazy">
+        </iframe>
+    </div>
+    
+    <!-- FAQ Section -->
+    <div class="card" style="padding: 2rem;">
+        <h3 style="font-size: 1.3rem; color: #0b2b4f; margin-bottom: 1rem;">Frequently Asked Questions</h3>
+        
+        <div style="margin-bottom: 1rem; padding: 1rem; background: #f8fafc; border-radius: 8px;">
+            <p style="font-weight: 600; color: #0b2b4f; margin-bottom: 0.3rem;">How do I post a job?</p>
+            <p style="color: #475569; font-size: 0.9rem;">Register as an employer, verify your email, and click "Post Job" in your dashboard.</p>
+        </div>
+        
+        <div style="margin-bottom: 1rem; padding: 1rem; background: #f8fafc; border-radius: 8px;">
+            <p style="font-weight: 600; color: #0b2b4f; margin-bottom: 0.3rem;">How long does job approval take?</p>
+            <p style="color: #475569; font-size: 0.9rem;">Jobs are typically approved within 24-48 hours by our admin team.</p>
+        </div>
+        
+        <div style="margin-bottom: 1rem; padding: 1rem; background: #f8fafc; border-radius: 8px;">
+            <p style="font-weight: 600; color: #0b2b4f; margin-bottom: 0.3rem;">Can I share photos on the platform?</p>
+            <p style="color: #475569; font-size: 0.9rem;">Yes! You can upload industry photos that will appear in the community feed.</p>
+        </div>
+        
+        <div style="text-align: center; margin-top: 1rem;">
+            <a href="/faq" style="color: #0b2b4f; text-decoration: none;">View all FAQs →</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

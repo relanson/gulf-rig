@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oil & Gas Job Portal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- Minimal critical inline styles only -->
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .main-content {
+            flex: 1;
+            width: 100%;
+        }
+        .content-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo">JobPortal</a>
+            
+            {% block navbar_title %}
+            <div class="nav-title-placeholder">
+                <div class="nav-title-large">Oil and Gas Jobs in GCC & Worldwide</div>
+                <div class="nav-title-small">Shutdown | Maintenance | Commissioning | Construction</div>
+            </div>
+            {% endblock %}
+            
+            <div class="nav-links">
+                {% if session.user_id %}
+                    {% if session.role == 'admin' %}
+                        <a href="/admin" class="btn-dashboard">Admin</a>
+                        <a href="/poster/add" class="btn-post">Post Job</a>
+                    {% else %}
+                        <a href="/poster/dashboard" class="btn-dashboard">Dashboard</a>
+                        <a href="/poster/add" class="btn-post">Post Job</a>
+                    {% endif %}
+                    <a href="/logout" class="btn-logout">Logout</a>
+                {% else %}
+                    <a href="/login" class="btn-login">Login</a>
+                    <a href="/register" class="btn-post">Post Job</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <!-- Flash Messages Section -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="content-container" style="margin-top: 1rem;">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} fade-in">
+                            {% if category == 'success' %}
+                                <i class="fas fa-check-circle"></i>
+                            {% elif category == 'danger' %}
+                                <i class="fas fa-exclamation-circle"></i>
+                            {% elif category == 'warning' %}
+                                <i class="fas fa-exclamation-triangle"></i>
+                            {% elif category == 'info' %}
+                                <i class="fas fa-info-circle"></i>
+                            {% endif %}
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Optional Footer (can be uncommented if needed) -->
+    <!--
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 Oil & Gas Job Portal. All rights reserved.</p>
+        </div>
+    </footer>
+    -->
+
+    <!-- Global JavaScript Functions -->
+    <script>
+        // Auto-hide flash messages after 5 seconds
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(function() {
+                const alerts = document.querySelectorAll('.alert');
+                alerts.forEach(function(alert) {
+                    alert.style.transition = 'opacity 0.5s ease';
+                    alert.style.opacity = '0';
+                    setTimeout(() => {
+                        if (alert.parentNode) {
+                            alert.style.display = 'none';
+                        }
+                    }, 500);
+                });
+            }, 5000);
+        });
+
+        // Global copy link function
+        function copyLink(link) {
+            navigator.clipboard.writeText(link).then(function() {
+                // Create tooltip
+                const tooltip = document.createElement('div');
+                tooltip.className = 'tooltip';
+                tooltip.textContent = 'Link copied!';
+                document.body.appendChild(tooltip);
+                
+                // Remove after animation
+                setTimeout(() => {
+                    if (tooltip.parentNode) {
+                        tooltip.remove();
+                    }
+                }, 2000);
+            }).catch(function(err) {
+                console.error('Could not copy text: ', err);
+                // Fallback for older browsers
+                const textarea = document.createElement('textarea');
+                textarea.value = link;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                
+                alert('Link copied to clipboard!');
+            });
+        }
+
+        // Global image modal functions
+        function openImageModal(imgSrc) {
+            const modal = document.getElementById('imageModal');
+            if (!modal) {
+                // Create modal if it doesn't exist
+                createImageModal();
+            }
+            document.getElementById('modalImage').src = imgSrc;
+            document.getElementById('imageModal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeImageModal(event) {
+            if (event && event.target.id !== 'imageModal' && event.target.className !== 'modal-close') {
+                return;
+            }
+            const modal = document.getElementById('imageModal');
+            if (modal) {
+                modal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+        }
+        
+        function createImageModal() {
+            const modalHTML = `
+                <div id="imageModal" class="modal" onclick="closeImageModal(event)">
+                    <img id="modalImage" src="" alt="Full size image">
+                    <button class="modal-close" onclick="closeImageModal()">✕</button>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+        }
+        
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeImageModal();
+            }
+        });
+    </script>
+</body>
+</html>

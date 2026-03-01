@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content-container" style="max-width: 1200px; margin: 0 auto; padding: 2rem 20px;">
+    
+    <!-- Login Box -->
+    <div class="card" style="max-width: 400px; margin: 0 auto; padding: 2rem;">
+        
+        <h2 style="font-size: 1.5rem; color: #0b2b4f; margin-bottom: 1.5rem; text-align: center; font-weight: 600;">Welcome Back</h2>
+        
+        <form method="POST">
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" name="email" required class="form-control">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <input type="password" name="password" required class="form-control">
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">
+                Login
+            </button>
+            
+            <p style="text-align: center; color: #64748b; font-size: 0.9rem; margin-top: 1rem;">
+                Don't have an account? 
+                <a href="/register" style="color: #0b2b4f; text-decoration: none; font-weight: 600;">Register here</a>
+            </p>
+        </form>
+    </div>
+    
+    <!-- Flash Messages Section - Wider box below login panel -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                {% if category == 'success' and 'registration successful' in message.lower() %}
+                <div class="card" style="max-width: 500px; margin: 1.5rem auto 0; background: #10b981; color: white; text-align: center; padding: 1.8rem; box-shadow: 0 4px 15px rgba(16,185,129,0.3);">
+                    <i class="fas fa-check-circle" style="font-size: 2.5rem; margin-bottom: 0.8rem; display: block;"></i>
+                    <h3 style="font-size: 1.3rem; font-weight: 700; margin-bottom: 0.5rem; color: white;">{{ message }}</h3>
+                    <p style="font-size: 1rem; opacity: 0.95; color: white;">Please login with your credentials</p>
+                </div>
+                {% elif category == 'danger' %}
+                <div class="alert alert-danger" style="max-width: 500px; margin: 1rem auto 0;">
+                    <i class="fas fa-exclamation-circle"></i> {{ message }}
+                </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+</div>
+{% endblock %}

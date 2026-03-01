@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content-container" style="max-width: 500px; margin: 0 auto; padding: 2rem 20px;">
+    
+    <div class="card" style="padding: 2rem;">
+        
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <i class="fas fa-envelope" style="font-size: 3rem; color: #0b2b4f; margin-bottom: 1rem;"></i>
+            <h2 style="font-size: 1.5rem; color: #0b2b4f; margin-bottom: 0.5rem;">Verify Your Email</h2>
+            <p style="color: #64748b;">We've sent a verification code to <strong>{{ email }}</strong></p>
+        </div>
+        
+        <form method="POST" action="/verify-email">
+            <div class="form-group">
+                <label class="form-label">Enter OTP Code</label>
+                <input type="text" name="otp" placeholder="6-digit code" required maxlength="6"
+                       class="form-control" style="text-align: center; letter-spacing: 0.3rem; font-size: 1.2rem;">
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; margin-bottom: 1rem;">
+                Verify Email
+            </button>
+        </form>
+        
+        <div style="text-align: center;">
+            <p style="color: #64748b; margin-bottom: 0.5rem;">Didn't receive the code?</p>
+            <a href="/send-otp" style="color: #0b2b4f; text-decoration: none; font-weight: 500;">Resend OTP</a>
+        </div>
+    </div>
+    
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}" style="margin-top: 1rem;">
+                    {% if category == 'success' %}
+                        <i class="fas fa-check-circle"></i>
+                    {% elif category == 'danger' %}
+                        <i class="fas fa-exclamation-circle"></i>
+                    {% elif category == 'info' %}
+                        <i class="fas fa-info-circle"></i>
+                    {% endif %}
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+</div>
+{% endblock %}
