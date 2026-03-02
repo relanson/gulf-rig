@@ -34,6 +34,27 @@ app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_USERNAME')
 
 mail = Mail(app)
 
+# Add this near the top of app.py, right after creating the app
+
+from flask import request
+
+@app.before_request
+def before_request():
+    # List ALL allowed hosts
+    allowed_hosts = [
+        'gulf-rig-3ll9m.ondigitalocean.app',  # temp URL
+        'gulf-rig.com',                         # your domain
+        'www.gulf-rig.com',                      # www version
+        '172.66.0.96'                            # direct IP
+    ]
+    
+    # If host not allowed, return 403
+    if request.host not in allowed_hosts:
+        return "Host not allowed", 403
+
+# Also add this for good measure
+app.config['SERVER_NAME'] = None
+
 # ================= DATABASE =================
 def get_db():
     if 'db' not in g:
@@ -950,4 +971,5 @@ with app.app_context():
 
 if __name__ == '__main__':
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
     app.run(debug=True, host='0.0.0.0', port=5000)
