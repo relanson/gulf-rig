@@ -40,15 +40,21 @@ from flask import request
 
 @app.before_request
 def before_request():
-    # List ALL allowed hosts
+    # Get environment - default to development
+    env = os.getenv('FLASK_ENV', 'development')
+    
+    # In development mode, allow all hosts
+    if env == 'development':
+        return
+    
+    # In production, enforce host checking
     allowed_hosts = [
-        'gulf-rig-3ll9m.ondigitalocean.app',  # temp URL
-        'gulf-rig.com',                         # your domain
-        'www.gulf-rig.com',                      # www version
-        '172.66.0.96'                            # direct IP
+        'gulf-rig-3ll9m.ondigitalocean.app',
+        'gulf-rig.com',
+        'www.gulf-rig.com',
+        '172.66.0.96'
     ]
     
-    # If host not allowed, return 403
     if request.host not in allowed_hosts:
         return "Host not allowed", 403
 
