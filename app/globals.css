@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+:root {
+  --fb-bg:         #f0f2f5;
+  --fb-surface:    #ffffff;
+  --fb-blue:       #1877F2;
+  --fb-blue-hover: #166FE5;
+  --fb-blue-light: #E7F3FF;
+  --fb-text:       #050505;
+  --fb-secondary:  #65676B;
+  --fb-border:     #CED0D4;
+  --fb-hover:      #F2F2F2;
+  --fb-green:      #42B72A;
+  --fb-nav-h:      56px;
+}
+
+html, body {
+  background: var(--fb-bg);
+  color: var(--fb-text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Facebook-style scrollbar ── */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--fb-bg); }
+::-webkit-scrollbar-thumb { background: #BCC0C4; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #8A8D91; }
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+.line-clamp-2 { display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden; }
+.line-clamp-3 { display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden; }
+.line-clamp-4 { display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden; }

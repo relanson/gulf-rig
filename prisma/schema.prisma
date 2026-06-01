@@ -1,0 +1,47 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model JobPost {
+  id                String           @id @default(cuid())
+  status            String           @default("pending")
+  postType          String
+  imageUrl          String?
+  jobTitle          String
+  description       String?
+  projectType       String
+  customProjectType String?
+  industry          String?
+  customIndustry    String?
+  currency          String           @default("USD")
+  salary            String
+  experience        String
+  qualification     String
+  location          String
+  companyName       String
+  posterName        String?
+  posterPhone       String?
+  posterEmail       String?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  approvedAt        DateTime?
+  viewCount         Int              @default(0)
+  applications      JobApplication[]
+}
+
+model JobApplication {
+  id         String   @id @default(cuid())
+  jobPostId  String
+  jobPost    JobPost  @relation(fields: [jobPostId], references: [id], onDelete: Cascade)
+  name       String
+  phone      String
+  email      String
+  resumeLink String?
+  message    String?
+  appliedAt  DateTime @default(now())
+}
