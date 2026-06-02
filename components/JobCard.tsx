@@ -41,11 +41,6 @@ function parseImages(imageUrl: string | null): string[] {
   }
 }
 
-function avatarColor(name: string): string {
-  const colors = ["#1877F2", "#E4430C", "#8B5CF6", "#0F9D58", "#F59E0B", "#EC4899", "#0EA5E9", "#6366F1"];
-  return colors[name.charCodeAt(0) % colors.length];
-}
-
 function timeAgo(dateStr: string | null) {
   if (!dateStr) return "Recently";
   const h = Math.floor((Date.now() - new Date(dateStr).getTime()) / 3_600_000);
@@ -65,8 +60,6 @@ export default function JobCard({ job }: { job: Job }) {
 
   const pt        = getProjectType(job.projectType);
   const ptLabel   = getProjectLabel(job.projectType, job.customProjectType);
-  const bgColor   = avatarColor(job.companyName);
-  const initial   = job.companyName.charAt(0).toUpperCase();
   const images    = imgError ? [] : parseImages(job.imageUrl);
   const hasImages = images.length > 0;
 
@@ -91,15 +84,10 @@ export default function JobCard({ job }: { job: Job }) {
       >
         {/* ── Post header ── */}
         <div className="flex items-start gap-2 px-4 pt-3 pb-2">
-          {/* Avatar — initial of poster name if available, else company */}
-          <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-extrabold text-base flex-shrink-0 shadow-sm" style={{ background: bgColor }}>
-            {(job.posterName ?? job.companyName).charAt(0).toUpperCase()}
-          </div>
-
-          {/* Left: Posted by name + timestamp */}
+          {/* Left: Name + timestamp */}
           <div className="flex-1 min-w-0">
             <p className="font-bold text-sm leading-tight" style={{ color: "var(--fb-text)" }}>
-              {job.posterName ? `Posted by ${job.posterName}` : job.companyName}
+              {job.posterName ?? job.companyName}
             </p>
             <div className="flex items-center gap-1.5 flex-wrap">
               <span className="text-xs" style={{ color: "var(--fb-secondary)" }}>{timeAgo(job.approvedAt)}</span>

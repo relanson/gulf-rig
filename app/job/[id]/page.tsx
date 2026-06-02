@@ -7,7 +7,6 @@ import {
   ArrowLeft, MapPin, Building2, DollarSign, GraduationCap,
   Clock, Flame, Calendar, HardHat, ThumbsUp, Mail, Phone, User, Factory,
 } from "lucide-react";
-import ApplyModal from "@/components/ApplyModal";
 import { getProjectType, getProjectLabel, getIndustryLabel, getGradient } from "@/lib/constants";
 
 interface Job {
@@ -38,7 +37,6 @@ export default function JobDetailPage() {
   const router = useRouter();
   const [job,       setJob]       = useState<Job | null>(null);
   const [loading,   setLoading]   = useState(true);
-  const [applyOpen, setApplyOpen] = useState(false);
   const [interested,setInterested]= useState(false);
   const [imgError,  setImgError]  = useState(false);
   const [imgIndex,  setImgIndex]  = useState(0);
@@ -187,13 +185,6 @@ export default function JobDetailPage() {
                 <ThumbsUp className="w-5 h-5" fill={interested ? "var(--fb-blue)" : "none"} style={{ color: interested ? "var(--fb-blue)" : "var(--fb-secondary)" }} />
                 Interested
               </button>
-              <button onClick={() => setApplyOpen(true)}
-                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold text-white"
-                style={{ background: "var(--fb-blue)" }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = "var(--fb-blue-hover)")}
-                onMouseLeave={(e) => (e.currentTarget.style.background = "var(--fb-blue)")}>
-                Apply Now
-              </button>
             </div>
           </div>
 
@@ -252,9 +243,6 @@ export default function JobDetailPage() {
         </div>
       </div>
 
-      {applyOpen && (
-        <ApplyModal jobId={job.id} jobTitle={job.jobTitle} companyName={job.companyName} onClose={() => setApplyOpen(false)} />
-      )}
     </>
   );
 }
