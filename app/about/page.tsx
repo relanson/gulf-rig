@@ -61,8 +61,8 @@ export default function AboutPage() {
               <h2 className="font-bold text-base mb-1.5" style={{ color: "var(--fb-text)" }}>Get in Touch</h2>
               <p>
                 Have a question, suggestion, or want a posting removed? Email us at{" "}
-                <a href="mailto:relansonmail@gmail.com" className="font-semibold underline" style={{ color: "var(--fb-blue)" }}>
-                  relansonmail@gmail.com
+                <a href="mailto:contact.gulfrig@gmail.com" className="font-semibold underline" style={{ color: "var(--fb-blue)" }}>
+                  contact.gulfrig@gmail.com
                 </a>.
               </p>
             </div>

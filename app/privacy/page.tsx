@@ -128,8 +128,8 @@ export default function PrivacyPage() {
             <Section title="10. Contact Us">
               <p>
                 If you have any questions about this Privacy Policy, please contact us at{" "}
-                <a href="mailto:relansonmail@gmail.com" className="font-semibold underline" style={{ color: "var(--fb-blue)" }}>
-                  relansonmail@gmail.com
+                <a href="mailto:contact.gulfrig@gmail.com" className="font-semibold underline" style={{ color: "var(--fb-blue)" }}>
+                  contact.gulfrig@gmail.com
                 </a>.
               </p>
             </Section>
