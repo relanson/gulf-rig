@@ -28,6 +28,7 @@ await client.batch([
     "posterName"        TEXT,
     "posterPhone"       TEXT,
     "posterEmail"       TEXT,
+    "sourceUrl"         TEXT,
     "createdAt"         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt"         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "approvedAt"        DATETIME,

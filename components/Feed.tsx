@@ -15,6 +15,7 @@ interface Job {
   qualification: string; imageUrl: string | null; postType: string;
   approvedAt: string | null;
   posterName?: string | null; posterPhone?: string | null; posterEmail?: string | null;
+  sourceUrl?: string | null;
 }
 
 export default function Feed() {

@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowLeft, MapPin, Building2, DollarSign, GraduationCap,
-  Clock, Flame, Calendar, HardHat, ThumbsUp, Mail, Phone, User, Factory,
+  Clock, Flame, Calendar, HardHat, ThumbsUp, Mail, Phone, User, Factory, ExternalLink,
 } from "lucide-react";
 import { getProjectType, getProjectLabel, getIndustryLabel, getGradient } from "@/lib/constants";
 
@@ -18,6 +18,7 @@ interface Job {
   imageUrl: string | null; postType: string;
   createdAt: string; approvedAt: string | null;
   posterName?: string | null; posterPhone?: string | null; posterEmail?: string | null;
+  sourceUrl?: string | null;
 }
 
 function avatarColor(name: string) {
@@ -176,7 +177,7 @@ export default function JobDetailPage() {
             )}
 
             {/* Action bar */}
-            <div className="flex px-2 py-1" style={{ borderTop: "1px solid var(--fb-border)" }}>
+            <div className="flex gap-1 px-2 py-1" style={{ borderTop: "1px solid var(--fb-border)" }}>
               <button onClick={() => setInterested(!interested)}
                 className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-colors"
                 style={{ color: interested ? "var(--fb-blue)" : "var(--fb-secondary)" }}
@@ -185,6 +186,15 @@ export default function JobDetailPage() {
                 <ThumbsUp className="w-5 h-5" fill={interested ? "var(--fb-blue)" : "none"} style={{ color: interested ? "var(--fb-blue)" : "var(--fb-secondary)" }} />
                 Interested
               </button>
+              {job.sourceUrl && (
+                <a href={job.sourceUrl} target="_blank" rel="noopener noreferrer"
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold text-white transition-opacity"
+                  style={{ background: "var(--fb-blue)" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.9")}
+                  onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}>
+                  Apply Now <ExternalLink className="w-4 h-4" />
+                </a>
+              )}
             </div>
           </div>
 

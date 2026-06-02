@@ -4,7 +4,7 @@ import { useState, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
-  Upload, X, Flame, CheckCircle, ArrowLeft, Loader2, User, Phone, Mail, Plus,
+  Upload, X, Flame, CheckCircle, ArrowLeft, Loader2, User, Phone, Mail, Plus, ExternalLink,
 } from "lucide-react";
 import { PROJECT_TYPES, INDUSTRIES, CURRENCIES } from "@/lib/constants";
 
@@ -13,7 +13,7 @@ export default function PostJobPage() {
     jobTitle: "", description: "", projectType: "", customProjectType: "",
     industry: "", customIndustry: "",
     currency: "USD", salary: "", experience: "", qualification: "", location: "", companyName: "",
-    posterName: "", posterPhone: "", posterEmail: "",
+    posterName: "", posterPhone: "", posterEmail: "", sourceUrl: "",
   });
   const [imgFiles,  setImgFiles]  = useState<File[]>([]);
   const [previews,  setPreviews]  = useState<string[]>([]);
@@ -97,7 +97,7 @@ export default function PostJobPage() {
     setForm({ jobTitle: "", description: "", projectType: "", customProjectType: "",
       industry: "", customIndustry: "",
       currency: "USD", salary: "", experience: "", qualification: "", location: "", companyName: "",
-      posterName: "", posterPhone: "", posterEmail: "" });
+      posterName: "", posterPhone: "", posterEmail: "", sourceUrl: "" });
     setImgFiles([]); setPreviews([]); setError("");
   };
 
@@ -285,6 +285,20 @@ export default function PostJobPage() {
               </div>
             ))}
 
+            {/* ── Source / Apply Link ── */}
+            <div className="pt-1" style={{ borderTop: "1px solid var(--fb-border)" }}>
+              <div className="flex items-center gap-2 mb-1 mt-2">
+                <ExternalLink className="w-4 h-4" style={{ color: "var(--fb-blue)" }} />
+                <p className="font-bold text-sm" style={{ color: "var(--fb-text)" }}>Source / Apply Link</p>
+              </div>
+              <p className="text-xs mb-2" style={{ color: "var(--fb-secondary)" }}>
+                Paste the original job link. An <b>&ldquo;Apply Now&rdquo;</b> button will send applicants there directly.
+              </p>
+              <input type="url" inputMode="url" placeholder="https://example.com/job-listing" value={form.sourceUrl}
+                onChange={(e) => setForm({ ...form, sourceUrl: e.target.value })}
+                className={inp} style={inpStyle} onFocus={focus} onBlur={blur} />
+            </div>
+
             {/* ── Poster Contact Info ── */}
             <div className="pt-1" style={{ borderTop: "1px solid var(--fb-border)" }}>
               <div className="flex items-center gap-2 mb-1 mt-2">
@@ -292,7 +306,7 @@ export default function PostJobPage() {
                 <p className="font-bold text-sm" style={{ color: "var(--fb-text)" }}>Poster Contact Info</p>
               </div>
               <p className="text-xs mb-3" style={{ color: "var(--fb-secondary)" }}>
-                Visible to job seekers so they can reach you directly.
+                Optional — visible to job seekers if you want them to reach you directly.
               </p>
 
               <div className="space-y-3">

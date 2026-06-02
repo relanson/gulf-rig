@@ -66,6 +66,7 @@ export async function POST(req: NextRequest) {
         posterName:        body.posterName?.trim()     || null,
         posterPhone:       body.posterPhone?.trim()    || null,
         posterEmail:       body.posterEmail?.trim()    || null,
+        sourceUrl:         body.sourceUrl?.trim()      || null,
       },
     });
 

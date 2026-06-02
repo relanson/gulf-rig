@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import {
   MapPin, DollarSign, GraduationCap, Clock,
-  ChevronRight, ChevronLeft, MoreHorizontal, Factory, Mail, Phone, X,
+  ChevronRight, ChevronLeft, MoreHorizontal, Factory, Mail, Phone, X, ExternalLink,
 } from "lucide-react";
 import { getProjectType, getProjectLabel, getIndustryLabel } from "@/lib/constants";
 
@@ -28,6 +28,7 @@ interface Job {
   posterName?: string | null;
   posterPhone?: string | null;
   posterEmail?: string | null;
+  sourceUrl?: string | null;
 }
 
 /** Parse imageUrl — JSON array (new) or plain URL string (legacy) */
@@ -179,7 +180,7 @@ export default function JobCard({ job }: { job: Job }) {
         )}
 
         {/* ── Action bar ── */}
-        <div className="flex items-center px-2 py-1" style={{ borderTop: "1px solid var(--fb-border)" }}>
+        <div className="flex items-center gap-1 px-2 py-1" style={{ borderTop: "1px solid var(--fb-border)" }}>
           <Link href={`/job/${job.id}`}
             className="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg text-sm font-semibold transition-all"
             style={{ color: "var(--fb-secondary)" }}
@@ -187,6 +188,15 @@ export default function JobCard({ job }: { job: Job }) {
             onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>
             View Details <ChevronRight className="w-4 h-4" />
           </Link>
+          {job.sourceUrl && (
+            <a href={job.sourceUrl} target="_blank" rel="noopener noreferrer"
+              className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-sm font-bold text-white transition-all"
+              style={{ background: "var(--fb-blue)" }}
+              onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.9")}
+              onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}>
+              Apply Now <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+          )}
         </div>
       </article>
 
