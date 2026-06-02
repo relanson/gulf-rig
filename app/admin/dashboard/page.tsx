@@ -29,29 +29,35 @@ export default function AdminDashboard() {
   const [busy,   setBusy]   = useState<string|null>(null);
   const [open,   setOpen]   = useState<string|null>(null);
 
-  const load = useCallback(async (t: Tab) => {
+  // Fetch ALL jobs once; tab filtering + counts are derived client-side so the
+  // stat cards always reflect every status (not just the active tab).
+  const load = useCallback(async () => {
     setLoading(true);
-    const r = await fetch(`/api/admin/jobs?status=${t}`, { credentials:"include" });
+    const r = await fetch(`/api/admin/jobs?status=all`, { credentials:"include" });
     if (r.status===401) { router.push("/admin"); return; }
     setJobs(await r.json());
     setLoading(false);
   }, [router]);
 
-  useEffect(() => { load(tab); }, [tab, load]);
+  useEffect(() => { load(); }, [load]);
 
   const act = async (id: string, key: string, fn: ()=>Promise<void>) => {
-    setBusy(`${id}-${key}`); try { await fn(); await load(tab); } finally { setBusy(null); }
+    setBusy(`${id}-${key}`); try { await fn(); await load(); } finally { setBusy(null); }
   };
   const approve = (id:string) => act(id,"ap",()=>fetch(`/api/admin/jobs/${id}/approve`,{method:"PUT",credentials:"include"}).then(()=>{}));
   const reject  = (id:string) => { if(!confirm("Reject?")) return; act(id,"rj",()=>fetch(`/api/admin/jobs/${id}/reject`,{method:"PUT",credentials:"include"}).then(()=>{})); };
   const del     = (id:string) => { if(!confirm("Delete permanently?")) return; act(id,"dl",()=>fetch(`/api/admin/jobs/${id}`,{method:"DELETE",credentials:"include"}).then(()=>{})); };
   const logout  = async () => { await fetch("/api/admin/logout",{method:"POST"}); router.push("/admin"); };
 
-  const filtered = jobs.filter(j=>
-    j.jobTitle.toLowerCase().includes(search.toLowerCase()) ||
-    j.companyName.toLowerCase().includes(search.toLowerCase()) ||
-    j.location.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = jobs.filter(j=>{
+    if (tab !== "all" && j.status !== tab) return false;
+    const q = search.toLowerCase();
+    return (
+      j.jobTitle.toLowerCase().includes(q) ||
+      j.companyName.toLowerCase().includes(q) ||
+      j.location.toLowerCase().includes(q)
+    );
+  });
 
   const counts = {
     all:jobs.length,
@@ -141,7 +147,7 @@ export default function AdminDashboard() {
               onFocus={(e)=>(e.currentTarget.style.borderColor="var(--fb-blue)")} onBlur={(e)=>(e.currentTarget.style.borderColor="var(--fb-border)")} />
           </div>
 
-          <button onClick={()=>load(tab)} className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold" style={{background:"white",color:"var(--fb-secondary)",border:"1px solid var(--fb-border)"}}>
+          <button onClick={()=>load()} className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold" style={{background:"white",color:"var(--fb-secondary)",border:"1px solid var(--fb-border)"}}>
             <RefreshCw className="w-3.5 h-3.5" /> Refresh
           </button>
         </div>
