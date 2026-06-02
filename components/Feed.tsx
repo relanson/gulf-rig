@@ -99,6 +99,11 @@ export default function Feed() {
 
         <hr className="my-2" style={{ borderColor: "var(--fb-border)" }} />
 
+        <div className="px-3 flex flex-wrap items-center gap-x-3 gap-y-1 mb-2">
+          <Link href="/about" className="text-[11px] font-medium hover:underline" style={{ color: "var(--fb-secondary)" }}>About</Link>
+          <Link href="/privacy" className="text-[11px] font-medium hover:underline" style={{ color: "var(--fb-secondary)" }}>Privacy Policy</Link>
+        </div>
+
         <div className="px-3 flex items-center gap-1.5">
           <Anchor className="w-3.5 h-3.5" style={{ color: "var(--fb-secondary)" }} />
           <p className="text-[11px]" style={{ color: "var(--fb-secondary)" }}>
