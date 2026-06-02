@@ -91,11 +91,16 @@ export default function JobCard({ job }: { job: Job }) {
       >
         {/* ── Post header ── */}
         <div className="flex items-start gap-2 px-4 pt-3 pb-2">
+          {/* Avatar — initial of poster name if available, else company */}
           <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-extrabold text-base flex-shrink-0 shadow-sm" style={{ background: bgColor }}>
-            {initial}
+            {(job.posterName ?? job.companyName).charAt(0).toUpperCase()}
           </div>
+
+          {/* Left: Posted by name + timestamp */}
           <div className="flex-1 min-w-0">
-            <p className="font-bold text-sm leading-tight" style={{ color: "var(--fb-text)" }}>{job.companyName}</p>
+            <p className="font-bold text-sm leading-tight" style={{ color: "var(--fb-text)" }}>
+              {job.posterName ? `Posted by ${job.posterName}` : job.companyName}
+            </p>
             <div className="flex items-center gap-1.5 flex-wrap">
               <span className="text-xs" style={{ color: "var(--fb-secondary)" }}>{timeAgo(job.approvedAt)}</span>
               <span className="text-xs" style={{ color: "var(--fb-secondary)" }}>·</span>
@@ -107,10 +112,12 @@ export default function JobCard({ job }: { job: Job }) {
               )}
             </div>
           </div>
+
+          {/* Right: Company name pill + more button */}
           <div className="flex items-center gap-1.5 shrink-0">
-            {job.posterName && (
-              <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ background: "var(--fb-bg)", color: "var(--fb-text)", border: "1px solid var(--fb-border)" }}>
-                {job.posterName}
+            {job.companyName && (
+              <span className="text-xs font-semibold px-2.5 py-1 rounded-full max-w-[120px] truncate" style={{ background: "var(--fb-bg)", color: "var(--fb-text)", border: "1px solid var(--fb-border)" }}>
+                {job.companyName}
               </span>
             )}
             <button className="w-9 h-9 rounded-full flex items-center justify-center transition-colors hover:bg-[#F2F2F2]" style={{ color: "var(--fb-secondary)" }}>
