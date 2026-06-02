@@ -6,7 +6,7 @@ import Link from "next/link";
 import JobCard from "./JobCard";
 import AdBanner from "./AdBanner";
 import WebJobCard, { type WebJobResult } from "./WebJobCard";
-import { PROJECT_TYPES, getProjectLabel, getProjectType } from "@/lib/constants";
+import { PROJECT_TYPES, getProjectLabel } from "@/lib/constants";
 
 // Search query used when a project-type term is clicked (runs local + feed search).
 const PT_QUERY: Record<string, string> = {
@@ -16,6 +16,15 @@ const PT_QUERY: Record<string, string> = {
   shutdown: "Shutdown",
   other: "Oil & Gas",
 };
+
+// Curated role list for "Today's Openings" — each role runs a local + feed search.
+const ROLE_GROUPS: { category: string; color: string; roles: string[] }[] = [
+  { category: "Instrumentation",   color: "#0284c7", roles: ["Instrument Technician", "Instrument Foreman", "Instrument Supervisor", "Instrument Engineer"] },
+  { category: "Operation",         color: "#059669", roles: ["Field Operator", "DCS Operator", "Shift Supervisor-operation"] },
+  { category: "Rotating Equipment", color: "#d97706", roles: ["Rotating Equipment Technician", "Rotating Equipment Foreman", "Rotating Equipment Supervisor", "Rotating Equipment Engineer"] },
+  { category: "Mechanical",        color: "#dc2626", roles: ["Mechanical Technician", "Mechanical Foreman", "Mechanical Supervisor", "Mechanical Engineer"] },
+  { category: "Electrical",        color: "#7c3aed", roles: ["Electrical Technician", "Electrical Foreman", "Electrical Supervisor", "Electrical Engineer"] },
+];
 
 interface Job {
   id: string; jobTitle: string; description: string | null;
@@ -125,7 +134,7 @@ export default function Feed() {
     <div className="flex min-h-screen pt-[56px]" style={{ background: "var(--fb-bg)" }}>
 
       {/* ══════════ LEFT SIDEBAR ══════════ */}
-      <aside className="hidden lg:flex flex-col gap-1 w-[280px] xl:w-[340px] shrink-0 px-3 py-4 sticky top-[56px] h-[calc(100vh-56px)] overflow-y-auto no-scrollbar">
+      <aside className="hidden lg:flex flex-col gap-1 w-[280px] xl:w-[300px] shrink-0 px-3 py-4 sticky top-[56px] h-[calc(100vh-56px)] overflow-y-auto no-scrollbar">
         <SidebarLink href="/" icon={<Flame className="w-5 h-5" />}       label="Job Feed"   active={filter === "all"} onClick={() => setFilter("all")} />
         <SidebarLink href="/post" icon={<PlusCircle className="w-5 h-5" />} label="Post a Job" />
         <SidebarLink href="/admin" icon={<Shield className="w-5 h-5" />}   label="Admin Panel" />
@@ -231,41 +240,57 @@ export default function Feed() {
         <div className="h-16 md:h-0" />
       </main>
 
-      {/* ══════════ RIGHT PANEL ══════════ */}
-      <aside className="hidden xl:flex flex-col gap-3 w-[360px] shrink-0 px-3 py-4 sticky top-[56px] h-[calc(100vh-56px)] overflow-y-auto no-scrollbar">
+      {/* ══════════ TODAY'S OPENINGS COLUMN ══════════ */}
+      <aside className="hidden xl:flex flex-col gap-3 w-[300px] shrink-0 px-3 py-4 sticky top-[56px] h-[calc(100vh-56px)] overflow-y-auto no-scrollbar">
 
-        {/* Today's Openings — live job titles, each runs a local + feed search */}
+        {/* Today's Openings — curated roles, each runs a local + feed search */}
         <div className="bg-white rounded-xl p-4" style={{ border: "1px solid var(--fb-border)", boxShadow: "0 1px 2px rgba(0,0,0,.1)" }}>
-          <p className="font-bold text-base mb-3">Today&apos;s Openings</p>
-          {jobs.length === 0 ? (
-            <p className="text-sm" style={{ color: "var(--fb-secondary)" }}>No openings yet — check back soon.</p>
-          ) : (
-            <div className="flex flex-col">
-              {jobs.map((job) => (
-                <Link
-                  key={job.id}
-                  href={`/search?q=${encodeURIComponent(job.jobTitle)}`}
-                  className="flex items-start gap-2.5 py-2 px-1 rounded-lg transition-colors"
-                  onMouseEnter={(e) => { e.currentTarget.style.background = "var(--fb-hover)"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
-                >
-                  <span className="w-2.5 h-2.5 rounded-full shrink-0 mt-1.5" style={{ background: getProjectType(job.projectType).color }} />
-                  <span className="flex-1 min-w-0 text-sm font-medium leading-snug" style={{ color: "var(--fb-text)" }}>
-                    {job.jobTitle}
+          <p className="font-bold text-base mb-2">Today&apos;s Openings</p>
+          <div className="flex flex-col gap-2">
+            {ROLE_GROUPS.map((group) => (
+              <div key={group.category}>
+                <div className="flex items-center gap-2 mb-0.5 px-1">
+                  <span className="w-2 h-2 rounded-full shrink-0" style={{ background: group.color }} />
+                  <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "var(--fb-secondary)" }}>
+                    {group.category}
                   </span>
-                </Link>
-              ))}
-            </div>
-          )}
+                </div>
+                <div className="flex flex-col">
+                  {group.roles.map((role) => (
+                    <Link
+                      key={role}
+                      href={`/search?q=${encodeURIComponent(role)}`}
+                      className="text-[13px] font-medium py-1 pl-4 pr-1 rounded-lg transition-colors"
+                      style={{ color: "var(--fb-text)" }}
+                      onMouseEnter={(e) => { e.currentTarget.style.background = "var(--fb-hover)"; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+                    >
+                      {role}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* ── Google Ad #1 — below Today's Openings ── */}
+        {/* Banner ad — shown only below 2xl, where the vertical ad column is hidden */}
+        <div className="2xl:hidden">
+          <AdBanner adSlot="1111111111" adClient="ca-pub-1550416832618336" />
+        </div>
+
+      </aside>
+
+      {/* ══════════ GOOGLE ADS — vertical skyscraper column (very wide screens) ══════════ */}
+      <aside className="hidden 2xl:flex flex-col w-[300px] shrink-0 px-3 py-4 sticky top-[56px] h-[calc(100vh-56px)]">
         {/* ✏️ Get slot IDs: AdSense dashboard → Ads → By ad unit → Create ad unit */}
-        <AdBanner adSlot="1111111111" adClient="ca-pub-1550416832618336" />
-
-        {/* ── Google Ad #2 — bottom of sidebar ── */}
-        <AdBanner adSlot="2222222222" adClient="ca-pub-1550416832618336" />
-
+        <AdBanner
+          adSlot="2222222222"
+          adClient="ca-pub-1550416832618336"
+          adFormat="vertical"
+          fullWidthResponsive={false}
+          style={{ flex: 1, minHeight: 600 }}
+        />
       </aside>
     </div>
   );
