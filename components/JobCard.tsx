@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import {
   MapPin, DollarSign, GraduationCap, Clock,
-  ChevronRight, MoreHorizontal, Factory, Mail, Phone,
+  ChevronRight, ChevronLeft, MoreHorizontal, Factory, Mail, Phone,
 } from "lucide-react";
 import { getProjectType, getProjectLabel, getIndustryLabel } from "@/lib/constants";
 
@@ -31,6 +31,17 @@ interface Job {
   posterEmail?: string | null;
 }
 
+/** Parse imageUrl — JSON array (new) or plain URL string (legacy) */
+function parseImages(imageUrl: string | null): string[] {
+  if (!imageUrl) return [];
+  try {
+    const parsed = JSON.parse(imageUrl);
+    return Array.isArray(parsed) ? parsed.filter(Boolean) : [imageUrl];
+  } catch {
+    return [imageUrl];
+  }
+}
+
 function avatarColor(name: string): string {
   const colors = ["#1877F2", "#E4430C", "#8B5CF6", "#0F9D58", "#F59E0B", "#EC4899", "#0EA5E9", "#6366F1"];
   return colors[name.charCodeAt(0) % colors.length];
@@ -47,19 +58,24 @@ function timeAgo(dateStr: string | null) {
 }
 
 export default function JobCard({ job }: { job: Job }) {
-  const [imgError, setImgError] = useState(false);
-  const [expanded, setExpanded] = useState(false);
+  const [imgError,  setImgError]  = useState(false);
+  const [expanded,  setExpanded]  = useState(false);
+  const [imgIndex,  setImgIndex]  = useState(0);
 
-  const pt      = getProjectType(job.projectType);
-  const ptLabel = getProjectLabel(job.projectType, job.customProjectType);
-  const bgColor = avatarColor(job.companyName);
-  const initial = job.companyName.charAt(0).toUpperCase();
-  const hasImage = job.imageUrl && !imgError;
+  const pt        = getProjectType(job.projectType);
+  const ptLabel   = getProjectLabel(job.projectType, job.customProjectType);
+  const bgColor   = avatarColor(job.companyName);
+  const initial   = job.companyName.charAt(0).toUpperCase();
+  const images    = imgError ? [] : parseImages(job.imageUrl);
+  const hasImages = images.length > 0;
 
   const MAX     = 180;
   const desc    = job.description ?? "";
   const isLong  = desc.length > MAX;
   const display = !expanded && isLong ? desc.slice(0, MAX) + "…" : desc;
+
+  const prevImg = (e: React.MouseEvent) => { e.preventDefault(); setImgIndex(i => (i - 1 + images.length) % images.length); };
+  const nextImg = (e: React.MouseEvent) => { e.preventDefault(); setImgIndex(i => (i + 1) % images.length); };
 
   return (
     <article
@@ -68,10 +84,7 @@ export default function JobCard({ job }: { job: Job }) {
     >
       {/* ── Post header ── */}
       <div className="flex items-start gap-2 px-4 pt-3 pb-2">
-        <div
-          className="w-10 h-10 rounded-full flex items-center justify-center text-white font-extrabold text-base flex-shrink-0 shadow-sm"
-          style={{ background: bgColor }}
-        >
+        <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-extrabold text-base flex-shrink-0 shadow-sm" style={{ background: bgColor }}>
           {initial}
         </div>
         <div className="flex-1 min-w-0">
@@ -81,10 +94,7 @@ export default function JobCard({ job }: { job: Job }) {
             <span className="text-xs" style={{ color: "var(--fb-secondary)" }}>·</span>
             <span className="text-xs" style={{ color: "var(--fb-secondary)" }}>🌐</span>
             {ptLabel && (
-              <span
-                className="text-[10px] font-bold px-2 py-0.5 rounded-full ml-0.5"
-                style={{ background: pt.color + "18", color: pt.color }}
-              >
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full ml-0.5" style={{ background: pt.color + "18", color: pt.color }}>
                 {ptLabel}
               </span>
             )}
@@ -92,17 +102,11 @@ export default function JobCard({ job }: { job: Job }) {
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
           {job.posterName && (
-            <span
-              className="text-xs font-semibold px-2.5 py-1 rounded-full"
-              style={{ background: "var(--fb-bg)", color: "var(--fb-text)", border: "1px solid var(--fb-border)" }}
-            >
+            <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ background: "var(--fb-bg)", color: "var(--fb-text)", border: "1px solid var(--fb-border)" }}>
               {job.posterName}
             </span>
           )}
-          <button
-            className="w-9 h-9 rounded-full flex items-center justify-center transition-colors hover:bg-[#F2F2F2]"
-            style={{ color: "var(--fb-secondary)" }}
-          >
+          <button className="w-9 h-9 rounded-full flex items-center justify-center transition-colors hover:bg-[#F2F2F2]" style={{ color: "var(--fb-secondary)" }}>
             <MoreHorizontal className="w-5 h-5" />
           </button>
         </div>
@@ -123,43 +127,51 @@ export default function JobCard({ job }: { job: Job }) {
         )}
       </div>
 
-      {/* ── Image ── */}
-      {hasImage && (
+      {/* ── Image carousel ── */}
+      {hasImages && (
         <div className="relative w-full" style={{ aspectRatio: "16/9" }}>
-          <Image src={job.imageUrl!} alt={job.jobTitle} fill className="object-cover" onError={() => setImgError(true)} />
+          <Image src={images[imgIndex]} alt={job.jobTitle} fill className="object-cover" onError={() => setImgError(true)} />
+          {images.length > 1 && (
+            <>
+              <button onClick={prevImg} className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center shadow-md" style={{ background: "rgba(0,0,0,0.55)", color: "#fff" }}>
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button onClick={nextImg} className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center shadow-md" style={{ background: "rgba(0,0,0,0.55)", color: "#fff" }}>
+                <ChevronRight className="w-4 h-4" />
+              </button>
+              <span className="absolute bottom-2 right-2 text-[11px] font-bold text-white px-2 py-0.5 rounded-full" style={{ background: "rgba(0,0,0,0.55)" }}>
+                {imgIndex + 1}/{images.length}
+              </span>
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+                {images.map((_, i) => (
+                  <button key={i} onClick={(e) => { e.preventDefault(); setImgIndex(i); }} className="w-1.5 h-1.5 rounded-full transition-all" style={{ background: i === imgIndex ? "#fff" : "rgba(255,255,255,0.5)" }} />
+                ))}
+              </div>
+            </>
+          )}
         </div>
       )}
 
-      {/* ── All info chips (job details + contact) ── */}
-      {(job.location || job.salary || job.experience || job.qualification || job.industry || job.posterName || job.posterEmail || job.posterPhone) && (
+      {/* ── Info chips ── */}
+      {(job.location || job.salary || job.experience || job.qualification || job.industry || job.posterEmail || job.posterPhone) && (
         <div className="px-4 py-2.5 flex flex-wrap gap-2">
           {job.location      && <Chip icon={<MapPin className="w-3.5 h-3.5" />}        text={job.location} />}
           {job.salary        && <Chip icon={<DollarSign className="w-3.5 h-3.5" />}    text={`${job.currency} ${job.salary}`} />}
           {job.experience    && <Chip icon={<Clock className="w-3.5 h-3.5" />}         text={formatExp(job.experience)} />}
           {job.qualification && <Chip icon={<GraduationCap className="w-3.5 h-3.5" />} text={job.qualification} />}
           {job.industry      && <Chip icon={<Factory className="w-3.5 h-3.5" />}       text={getIndustryLabel(job.industry, job.customIndustry)!} />}
-          {job.posterEmail   && (
-            <a href={`mailto:${job.posterEmail}`}>
-              <Chip icon={<Mail className="w-3.5 h-3.5" />} text={job.posterEmail} />
-            </a>
-          )}
-          {job.posterPhone   && (
-            <a href={`tel:${job.posterPhone}`}>
-              <Chip icon={<Phone className="w-3.5 h-3.5" />} text={job.posterPhone} />
-            </a>
-          )}
+          {job.posterEmail   && <a href={`mailto:${job.posterEmail}`}><Chip icon={<Mail className="w-3.5 h-3.5" />} text={job.posterEmail} /></a>}
+          {job.posterPhone   && <a href={`tel:${job.posterPhone}`}><Chip icon={<Phone className="w-3.5 h-3.5" />} text={job.posterPhone} /></a>}
         </div>
       )}
 
-      {/* ── Action bar: Details only ── */}
+      {/* ── Action bar ── */}
       <div className="flex items-center px-2 py-1" style={{ borderTop: "1px solid var(--fb-border)" }}>
-        <Link
-          href={`/job/${job.id}`}
+        <Link href={`/job/${job.id}`}
           className="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg text-sm font-semibold transition-all"
           style={{ color: "var(--fb-secondary)" }}
           onMouseEnter={(e) => (e.currentTarget.style.background = "var(--fb-hover)")}
-          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-        >
+          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>
           View Details <ChevronRight className="w-4 h-4" />
         </Link>
       </div>
@@ -167,7 +179,6 @@ export default function JobCard({ job }: { job: Job }) {
   );
 }
 
-/** If experience looks like a plain number (e.g. "10"), append "+ years" */
 function formatExp(exp: string): string {
   const trimmed = exp.trim();
   if (/year/i.test(trimmed)) return trimmed;
@@ -179,10 +190,7 @@ function formatExp(exp: string): string {
 
 function Chip({ icon, text }: { icon: React.ReactNode; text: string }) {
   return (
-    <span
-      className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
-      style={{ background: "var(--fb-bg)", color: "var(--fb-secondary)", border: "1px solid var(--fb-border)" }}
-    >
+    <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium" style={{ background: "var(--fb-bg)", color: "var(--fb-secondary)", border: "1px solid var(--fb-border)" }}>
       <span style={{ color: "var(--fb-blue)" }}>{icon}</span>
       {text}
     </span>

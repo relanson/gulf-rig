@@ -4,7 +4,7 @@ import { useState, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
-  Upload, X, Flame, CheckCircle, ArrowLeft, Loader2, User, Phone, Mail,
+  Upload, X, Flame, CheckCircle, ArrowLeft, Loader2, User, Phone, Mail, Plus,
 } from "lucide-react";
 import { PROJECT_TYPES, INDUSTRIES, CURRENCIES } from "@/lib/constants";
 
@@ -15,46 +15,74 @@ export default function PostJobPage() {
     currency: "USD", salary: "", experience: "", qualification: "", location: "", companyName: "",
     posterName: "", posterPhone: "", posterEmail: "",
   });
-  const [imgFile,  setImgFile]  = useState<File | null>(null);
-  const [preview,  setPreview]  = useState<string | null>(null);
-  const [loading,  setLoading]  = useState(false);
-  const [success,  setSuccess]  = useState(false);
-  const [error,    setError]    = useState("");
+  const [imgFiles,  setImgFiles]  = useState<File[]>([]);
+  const [previews,  setPreviews]  = useState<string[]>([]);
+  const [loading,   setLoading]   = useState(false);
+  const [success,   setSuccess]   = useState(false);
+  const [error,     setError]     = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const pickFile = (f: File) => { setImgFile(f); setPreview(URL.createObjectURL(f)); };
+  const addFiles = (files: FileList | null) => {
+    if (!files) return;
+    const newFiles: File[] = [];
+    const newPreviews: string[] = [];
+    Array.from(files).forEach(f => {
+      if (f.type.startsWith("image/")) {
+        newFiles.push(f);
+        newPreviews.push(URL.createObjectURL(f));
+      }
+    });
+    setImgFiles(prev => [...prev, ...newFiles]);
+    setPreviews(prev => [...prev, ...newPreviews]);
+  };
+
+  const removeImage = (idx: number) => {
+    setImgFiles(prev => prev.filter((_, i) => i !== idx));
+    setPreviews(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const hasImages = imgFiles.length > 0;
 
   const submit = async (e: React.FormEvent) => {
-    e.preventDefault(); setError("");
-    if (!form.companyName.trim())  { setError("Please enter the company or employer name."); return; }
-    if (!form.posterName.trim())   { setError("Please enter your name."); return; }
-    if (!form.posterEmail.trim())  { setError("Please enter your email address."); return; }
+    e.preventDefault();
+    setError("");
 
-    // Auto-detect postType
-    const hasImage = !!imgFile;
-    const hasDesc  = !!form.description.trim();
-    const postType = hasImage && hasDesc ? "image_with_caption"
-                   : hasImage            ? "image_only"
-                   : "caption_only";
+    // Conditional validation
+    if (!form.posterName.trim()) { setError("Please enter your name."); return; }
+    if (!hasImages) {
+      if (!form.jobTitle.trim())    { setError("Please enter the job title."); return; }
+      if (!form.companyName.trim()) { setError("Please enter the company or employer name."); return; }
+      if (!form.posterEmail.trim()) { setError("Please enter your email address."); return; }
+    }
 
     setLoading(true);
     try {
-      let imageUrl: string | null = null;
-      if (imgFile) {
-        const fd = new FormData(); fd.append("file", imgFile);
+      // Upload all images one by one
+      const imageUrls: string[] = [];
+      for (const file of imgFiles) {
+        const fd = new FormData();
+        fd.append("file", file);
         const r = await fetch("/api/upload", { method: "POST", body: fd });
         const d = await r.json();
         if (!r.ok) throw new Error(d.error);
-        imageUrl = d.url;
+        imageUrls.push(d.url);
       }
+
+      // Auto-detect postType
+      const hasDesc  = !!form.description.trim();
+      const postType = imageUrls.length > 0 && hasDesc ? "image_with_caption"
+                     : imageUrls.length > 0            ? "image_only"
+                     : "caption_only";
+
       const payload = {
         ...form,
         customProjectType: form.projectType === "other" ? form.customProjectType.trim() : null,
         industry:          form.industry || null,
         customIndustry:    form.industry === "other" ? form.customIndustry.trim() : null,
         postType,
-        imageUrl,
+        imageUrl: imageUrls.length > 0 ? JSON.stringify(imageUrls) : null,
       };
+
       const r2 = await fetch("/api/jobs", {
         method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload),
       });
@@ -70,7 +98,7 @@ export default function PostJobPage() {
       industry: "", customIndustry: "",
       currency: "USD", salary: "", experience: "", qualification: "", location: "", companyName: "",
       posterName: "", posterPhone: "", posterEmail: "" });
-    setImgFile(null); setPreview(null); setError("");
+    setImgFiles([]); setPreviews([]); setError("");
   };
 
   const inp = "w-full px-3 py-2.5 rounded-xl text-sm outline-none transition-all";
@@ -122,37 +150,63 @@ export default function PostJobPage() {
 
           <form onSubmit={submit} className="p-4 space-y-4">
 
-            {/* ── Image Upload ── */}
+            {/* ── Photo Upload (multiple) ── */}
             <div>
-              <label className={lbl}>Job Photo</label>
-              {preview ? (
-                <div className="relative rounded-xl overflow-hidden" style={{ aspectRatio: "16/9" }}>
-                  <Image src={preview} alt="preview" fill className="object-cover" />
-                  <button type="button" onClick={() => { setImgFile(null); setPreview(null); }}
-                    className="absolute top-2 right-2 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center shadow-sm">
-                    <X className="w-4 h-4" style={{ color: "var(--fb-secondary)" }} />
-                  </button>
+              <label className={lbl}>Job Photos</label>
+
+              {previews.length > 0 && (
+                <div className={`grid gap-2 mb-2 ${previews.length === 1 ? "grid-cols-1" : "grid-cols-2"}`}>
+                  {previews.map((src, i) => (
+                    <div key={i} className="relative rounded-xl overflow-hidden" style={{ aspectRatio: "16/9" }}>
+                      <Image src={src} alt={`preview ${i + 1}`} fill className="object-cover" />
+                      <button type="button" onClick={() => removeImage(i)}
+                        className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full flex items-center justify-center shadow"
+                        style={{ background: "rgba(0,0,0,0.6)" }}>
+                        <X className="w-3.5 h-3.5 text-white" />
+                      </button>
+                      <span className="absolute bottom-1.5 left-1.5 text-[10px] font-bold text-white px-1.5 py-0.5 rounded-full" style={{ background: "rgba(0,0,0,0.5)" }}>
+                        {i + 1}
+                      </span>
+                    </div>
+                  ))}
                 </div>
-              ) : (
+              )}
+
+              {previews.length === 0 ? (
                 <div onClick={() => fileRef.current?.click()}
-                  onDrop={(e) => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f?.type.startsWith("image/")) pickFile(f); }}
+                  onDrop={(e) => { e.preventDefault(); addFiles(e.dataTransfer.files); }}
                   onDragOver={(e) => e.preventDefault()}
                   className="border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all"
                   style={{ borderColor: "var(--fb-border)", background: "var(--fb-bg)" }}
                   onMouseEnter={(e) => (e.currentTarget.style.borderColor = "var(--fb-blue)")}
                   onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--fb-border)")}>
                   <Upload className="w-7 h-7 mx-auto mb-2" style={{ color: "var(--fb-secondary)" }} />
-                  <p className="text-sm font-semibold" style={{ color: "var(--fb-text)" }}>Add Photo</p>
-                  <p className="text-xs mt-0.5" style={{ color: "var(--fb-secondary)" }}>JPG, PNG, WEBP · Max 10 MB</p>
+                  <p className="text-sm font-semibold" style={{ color: "var(--fb-text)" }}>Add Photos</p>
+                  <p className="text-xs mt-0.5" style={{ color: "var(--fb-secondary)" }}>JPG, PNG, WEBP · Max 10 MB each · Select multiple</p>
                 </div>
+              ) : (
+                <button type="button" onClick={() => fileRef.current?.click()}
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold"
+                  style={{ background: "var(--fb-bg)", color: "var(--fb-blue)", border: "1px solid var(--fb-blue)" }}>
+                  <Plus className="w-4 h-4" /> Add More Photos ({previews.length} added)
+                </button>
               )}
-              <input ref={fileRef} type="file" accept="image/*"
-                onChange={(e) => { const f = e.target.files?.[0]; if (f) pickFile(f); }} className="hidden" />
+              <input ref={fileRef} type="file" accept="image/*" multiple
+                onChange={(e) => { addFiles(e.target.files); e.target.value = ""; }} className="hidden" />
+            </div>
+
+            {/* Dynamic required-fields hint */}
+            <div className="rounded-xl px-3 py-2 text-xs" style={{ background: hasImages ? "#EEF2FF" : "#FFF9E6", color: hasImages ? "#4338CA" : "#986801", border: `1px solid ${hasImages ? "#C7D2FE" : "#FFE082"}` }}>
+              {hasImages
+                ? `📸 ${previews.length} photo${previews.length > 1 ? "s" : ""} added — only your name is required now.`
+                : "📝 Without photos: job title, company, your name & email are required."}
             </div>
 
             {/* ── Job Title ── */}
             <div>
-              <label className={lbl}>Job Title</label>
+              <label className={lbl}>
+                Job Title{!hasImages && <span className="text-red-500 ml-0.5">*</span>}
+              </label>
               <input type="text" placeholder="e.g. Senior Piping Engineer" value={form.jobTitle}
                 onChange={(e) => setForm({ ...form, jobTitle: e.target.value })}
                 className={inp} style={inpStyle} onFocus={focus} onBlur={blur} />
@@ -216,10 +270,10 @@ export default function PostJobPage() {
 
             {/* ── Other job details ── */}
             {[
-              { k: "experience",    label: "Experience",         ph: "e.g. 5+ years in Oil & Gas",  req: false },
-              { k: "qualification", label: "Qualification",      ph: "e.g. B.E. Mechanical",         req: false },
-              { k: "location",      label: "Location",           ph: "e.g. Abu Dhabi, UAE",           req: false },
-              { k: "companyName",   label: "Company / Employer", ph: "e.g. ADNOC, Shell, Aramco",    req: true  },
+              { k: "experience",    label: "Experience",         ph: "e.g. 5+ years in Oil & Gas",  req: false     },
+              { k: "qualification", label: "Qualification",      ph: "e.g. B.E. Mechanical",         req: false     },
+              { k: "location",      label: "Location",           ph: "e.g. Abu Dhabi, UAE",           req: false     },
+              { k: "companyName",   label: "Company / Employer", ph: "e.g. ADNOC, Shell, Aramco",    req: !hasImages },
             ].map(({ k, label, ph, req }) => (
               <div key={k}>
                 <label className={lbl}>
@@ -242,17 +296,13 @@ export default function PostJobPage() {
               </p>
 
               <div className="space-y-3">
-                {/* Name — required */}
                 <div>
-                  <label className={lbl}>
-                    Your Name <span className="text-red-500">*</span>
-                  </label>
+                  <label className={lbl}>Your Name <span className="text-red-500">*</span></label>
                   <input type="text" placeholder="e.g. Ahmed Al-Rashidi" value={form.posterName}
                     onChange={(e) => setForm({ ...form, posterName: e.target.value })}
                     className={inp} style={inpStyle} onFocus={focus} onBlur={blur} />
                 </div>
 
-                {/* Phone — optional, no label hint */}
                 <div>
                   <label className={lbl}><Phone className="w-3.5 h-3.5 inline mr-1" />Phone Number</label>
                   <input type="tel" placeholder="+971 50 000 0000" value={form.posterPhone}
@@ -260,9 +310,11 @@ export default function PostJobPage() {
                     className={inp} style={inpStyle} onFocus={focus} onBlur={blur} />
                 </div>
 
-                {/* Email — optional, no label hint */}
                 <div>
-                  <label className={lbl}><Mail className="w-3.5 h-3.5 inline mr-1" />Email Address <span className="text-red-500">*</span></label>
+                  <label className={lbl}>
+                    <Mail className="w-3.5 h-3.5 inline mr-1" />Email Address
+                    {!hasImages && <span className="text-red-500 ml-0.5">*</span>}
+                  </label>
                   <input type="email" placeholder="recruiter@company.com" value={form.posterEmail}
                     onChange={(e) => setForm({ ...form, posterEmail: e.target.value })}
                     className={inp} style={inpStyle} onFocus={focus} onBlur={blur} />

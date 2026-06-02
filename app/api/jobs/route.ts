@@ -25,18 +25,23 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
-    if (!body.companyName?.trim()) {
-      return NextResponse.json({ error: "Please enter the company or employer name." }, { status: 400 });
-    }
+    // imageUrl is now a JSON array string (e.g. '["url1","url2"]') or null
+    const hasImage = !!body.imageUrl;
+
     if (!body.posterName?.trim()) {
       return NextResponse.json({ error: "Please enter your name." }, { status: 400 });
     }
-    if (!body.posterEmail?.trim()) {
-      return NextResponse.json({ error: "Please enter your email address." }, { status: 400 });
+    // Without photos: company and email are also required
+    if (!hasImage) {
+      if (!body.companyName?.trim()) {
+        return NextResponse.json({ error: "Please enter the company or employer name." }, { status: 400 });
+      }
+      if (!body.posterEmail?.trim()) {
+        return NextResponse.json({ error: "Please enter your email address." }, { status: 400 });
+      }
     }
 
-    // Auto-detect postType from what was provided
-    const hasImage = !!body.imageUrl;
+    // Auto-detect postType
     const hasDesc  = !!body.description?.trim();
     const postType = hasImage && hasDesc ? "image_with_caption"
                    : hasImage            ? "image_only"

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Flame, Eye, EyeOff } from "lucide-react";
 
@@ -10,6 +10,13 @@ export default function AdminLoginPage() {
   const [show,    setShow]    = useState(false);
   const [loading, setLoading] = useState(false);
   const [error,   setError]   = useState("");
+
+  // If already logged in, go straight to dashboard
+  useEffect(() => {
+    fetch("/api/admin/jobs?status=pending&limit=1", { credentials: "include" })
+      .then(r => { if (r.ok) router.replace("/admin/dashboard"); })
+      .catch(() => {});
+  }, [router]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault(); setLoading(true); setError("");
@@ -59,14 +66,6 @@ export default function AdminLoginPage() {
             </button>
           </form>
 
-          <div className="mt-4 pt-4 text-center" style={{ borderTop:"1px solid var(--fb-border)" }}>
-            <p className="text-xs" style={{ color:"var(--fb-secondary)" }}>
-              Default password:{" "}
-              <code className="px-1.5 py-0.5 rounded text-xs font-mono" style={{ background:"var(--fb-bg)", color:"var(--fb-blue)" }}>
-                gulfrig@admin2024
-              </code>
-            </p>
-          </div>
         </div>
       </div>
     </div>

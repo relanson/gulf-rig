@@ -42,6 +42,7 @@ export default function JobDetailPage() {
   const [applyOpen, setApplyOpen] = useState(false);
   const [interested,setInterested]= useState(false);
   const [imgError,  setImgError]  = useState(false);
+  const [imgIndex,  setImgIndex]  = useState(0);
 
   useEffect(() => {
     fetch(`/api/jobs/${id}`).then(r => r.json()).then(d => {
@@ -62,6 +63,15 @@ export default function JobDetailPage() {
   const gradient = getGradient(0);
   const bg       = avatarColor(job.companyName);
   const initial  = job.companyName.charAt(0).toUpperCase();
+
+  // Parse multiple images
+  const images: string[] = (() => {
+    if (!job.imageUrl || imgError) return [];
+    try {
+      const parsed = JSON.parse(job.imageUrl);
+      return Array.isArray(parsed) ? parsed.filter(Boolean) : [job.imageUrl];
+    } catch { return [job.imageUrl]; }
+  })();
 
   const Detail = ({ icon: Icon, label, value, color }: { icon: React.ElementType; label: string; value: string; color: string }) => (
     <div className="bg-white rounded-2xl p-4" style={{ border: "1px solid var(--fb-border)", boxShadow: "0 1px 2px rgba(0,0,0,.06)" }}>
@@ -110,10 +120,34 @@ export default function JobDetailPage() {
               </div>
             </div>
 
-            {/* Image or gradient */}
-            {job.imageUrl && !imgError ? (
+            {/* Image carousel or gradient */}
+            {images.length > 0 ? (
               <div className="relative w-full" style={{ aspectRatio: "16/9" }}>
-                <Image src={job.imageUrl} alt={job.jobTitle} fill className="object-cover" onError={() => setImgError(true)} priority />
+                <Image src={images[imgIndex]} alt={job.jobTitle} fill className="object-cover" onError={() => setImgError(true)} priority />
+                {images.length > 1 && (
+                  <>
+                    <button onClick={() => setImgIndex(i => (i - 1 + images.length) % images.length)}
+                      className="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center shadow-md"
+                      style={{ background: "rgba(0,0,0,0.55)", color: "#fff" }}>
+                      ‹
+                    </button>
+                    <button onClick={() => setImgIndex(i => (i + 1) % images.length)}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center shadow-md"
+                      style={{ background: "rgba(0,0,0,0.55)", color: "#fff" }}>
+                      ›
+                    </button>
+                    <span className="absolute bottom-2 right-2 text-xs font-bold text-white px-2 py-0.5 rounded-full" style={{ background: "rgba(0,0,0,0.55)" }}>
+                      {imgIndex + 1}/{images.length}
+                    </span>
+                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
+                      {images.map((_, i) => (
+                        <button key={i} onClick={() => setImgIndex(i)}
+                          className="w-2 h-2 rounded-full transition-all"
+                          style={{ background: i === imgIndex ? "#fff" : "rgba(255,255,255,0.5)" }} />
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
             ) : (
               <div className={`relative h-48 bg-gradient-to-br ${gradient} flex items-center justify-center`}>

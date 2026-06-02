@@ -50,7 +50,7 @@ export default function Navbar() {
         {/* Right: Admin button */}
         <div className="flex items-center gap-2 shrink-0 ml-auto">
           <Link
-            href="/admin"
+            href="/admin/dashboard"
             className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all"
             style={{
               background: pathname.startsWith("/admin") ? "var(--fb-blue)" : "var(--fb-bg)",
@@ -68,7 +68,7 @@ export default function Navbar() {
         className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white flex items-center"
         style={{ borderTop: "1px solid var(--fb-border)", height: "52px" }}
       >
-        {[...navTabs, { href: "/admin", icon: Shield, label: "Admin" }].map(({ href, icon: Icon, label }) => (
+        {[...navTabs, { href: "/admin/dashboard", icon: Shield, label: "Admin" }].map(({ href, icon: Icon, label }) => (
           <Link
             key={href}
             href={href}

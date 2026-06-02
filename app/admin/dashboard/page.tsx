@@ -165,11 +165,15 @@ export default function AdminDashboard() {
               return (
                 <div key={job.id} className="bg-white rounded-2xl overflow-hidden transition-shadow hover:shadow-md" style={{border:"1px solid var(--fb-border)",boxShadow:"0 1px 2px rgba(0,0,0,.08)"}}>
                   <div className="flex items-start gap-3 p-4">
-                    {job.imageUrl&&(
-                      <div className="relative w-14 h-14 rounded-xl overflow-hidden shrink-0">
-                        <Image src={job.imageUrl} alt={job.jobTitle} fill className="object-cover" />
-                      </div>
-                    )}
+                    {job.imageUrl&&(()=>{
+                      let thumb = job.imageUrl;
+                      try { const p = JSON.parse(job.imageUrl); if(Array.isArray(p)&&p[0]) thumb=p[0]; } catch{}
+                      return (
+                        <div className="relative w-14 h-14 rounded-xl overflow-hidden shrink-0">
+                          <Image src={thumb} alt={job.jobTitle} fill className="object-cover" />
+                        </div>
+                      );
+                    })()}
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-1.5 mb-1">
                         <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{background:pt.color+"18",color:pt.color}}>{pt.label}</span>
