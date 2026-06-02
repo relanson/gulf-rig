@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Briefcase, PlusCircle, Shield, Anchor, Flame } from "lucide-react";
 import Link from "next/link";
 import JobCard from "./JobCard";
+import AdBanner from "./AdBanner";
 import { PROJECT_TYPES, getProjectLabel } from "@/lib/constants";
 
 interface Job {
@@ -177,6 +178,14 @@ export default function Feed() {
             ))}
           </div>
         </div>
+
+        {/* ── Google Ad #1 — below Today's Openings ── */}
+        {/* ✏️ Replace adSlot with your real slot ID from AdSense dashboard */}
+        <AdBanner adSlot="1111111111" />
+
+        {/* ── Google Ad #2 — bottom of sidebar ── */}
+        {/* ✏️ Replace adSlot with your second slot ID */}
+        <AdBanner adSlot="2222222222" />
 
       </aside>
     </div>
