@@ -99,14 +99,23 @@ export const CARD_GRADIENTS = [
   "from-indigo-500 via-blue-600 to-sky-700",
 ];
 
+const EMPTY_TYPE = {
+  value: "", label: "", color: "#9CA3AF",
+  tailwind: "", light: "", border: "", text: "", badge: "",
+  cardGradient: "from-slate-400 via-gray-500 to-zinc-600",
+} as const;
+
 export function getProjectType(value: string) {
-  return PROJECT_TYPES.find((p) => p.value === value) ?? PROJECT_TYPES[0];
+  if (!value) return EMPTY_TYPE;
+  return PROJECT_TYPES.find((p) => p.value === value) ?? EMPTY_TYPE;
 }
 
-/** Returns the display label — uses customProjectType for "other" entries */
-export function getProjectLabel(value: string, customProjectType?: string | null) {
+/** Returns the display label — null when no project type selected */
+export function getProjectLabel(value: string, customProjectType?: string | null): string | null {
+  if (!value) return null;
   if (value === "other" && customProjectType) return customProjectType;
-  return getProjectType(value).label;
+  const found = PROJECT_TYPES.find((p) => p.value === value);
+  return found ? found.label : null;
 }
 
 export function getGradient(index: number) {
