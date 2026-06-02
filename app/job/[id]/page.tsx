@@ -156,10 +156,10 @@ export default function JobDetailPage() {
             )}
 
             {/* Info grid — only show cards that have content */}
-            {(job.salary || job.experience || job.qualification || job.industry) && (
+            {(job.salary || job.experience || job.qualification || job.industry || ptLabel) && (
               <div className="px-4 py-3 grid grid-cols-2 gap-2">
                 {job.salary        && <Detail icon={DollarSign}    label="Salary"        value={`${job.currency} ${job.salary}`}                              color="var(--fb-blue)" />}
-                <Detail              icon={HardHat}       label="Project"       value={ptLabel}                                                       color={pt.color}       />
+                {ptLabel           && <Detail icon={HardHat}       label="Project"       value={ptLabel}                                                       color={pt.color}       />}
                 {job.industry      && <Detail icon={Factory}       label="Industry"      value={getIndustryLabel(job.industry, job.customIndustry)!}   color="#0EA5E9"        />}
                 {job.experience    && <Detail icon={Clock}         label="Experience"    value={job.experience}                                        color="#F59E0B"        />}
                 {job.qualification && <Detail icon={GraduationCap} label="Qualification" value={job.qualification}                                    color="#8B5CF6"        />}
