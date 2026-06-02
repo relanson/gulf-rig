@@ -37,14 +37,14 @@ export default function AdBanner({
   }, []);
 
   return (
-    <div
-      className="w-full overflow-hidden rounded-xl"
-      style={{ minHeight: 100, background: "var(--fb-bg)", border: "1px solid var(--fb-border)", ...style }}
-    >
+    // Transparent, borderless wrapper: an unfilled AdSense unit collapses to
+    // zero height, so empty ad space stays invisible instead of rendering a
+    // broken-looking empty box. The ad fills this in once it serves.
+    <div className="w-full overflow-hidden" style={style}>
       <ins
         ref={adRef}
         className="adsbygoogle"
-        style={{ display: "block", ...style }}
+        style={{ display: "block", width: "100%", ...style }}
         data-ad-client={adClient}
         data-ad-slot={adSlot}
         data-ad-format={adFormat}

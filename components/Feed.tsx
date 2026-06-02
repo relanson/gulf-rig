@@ -131,7 +131,7 @@ export default function Feed() {
   }
 
   return (
-    <div className="flex min-h-screen pt-[56px]" style={{ background: "var(--fb-bg)" }}>
+    <div className="flex min-h-screen pt-[56px] justify-center" style={{ background: "var(--fb-bg)" }}>
 
       {/* ══════════ LEFT SIDEBAR ══════════ */}
       <aside className="hidden lg:flex flex-col gap-1 w-[280px] xl:w-[300px] shrink-0 px-3 py-4 sticky top-[56px] h-[calc(100vh-56px)] overflow-y-auto no-scrollbar">
@@ -165,7 +165,7 @@ export default function Feed() {
       </aside>
 
       {/* ══════════ CENTER FEED ══════════ */}
-      <main className="flex-1 min-w-0 py-4 px-2 md:px-0" style={{ maxWidth: 600 }}>
+      <main className="w-full min-w-0 max-w-[600px] py-4 px-2 md:px-0">
 
         {/* Mobile filter pills */}
         <div className="lg:hidden flex items-center gap-2 mb-3 overflow-x-auto no-scrollbar px-1 pb-1">
@@ -284,7 +284,7 @@ export default function Feed() {
           adClient="ca-pub-1550416832618336"
           adFormat="vertical"
           fullWidthResponsive={false}
-          style={{ flex: 1, minHeight: 600 }}
+          style={{ width: 300 }}
         />
       </aside>
     </div>
