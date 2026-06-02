@@ -274,11 +274,6 @@ export default function Feed() {
           </div>
         </div>
 
-        {/* Banner ad — shown only below 2xl, where the vertical ad column is hidden */}
-        <div className="2xl:hidden">
-          <AdBanner adSlot="1111111111" adClient="ca-pub-1550416832618336" />
-        </div>
-
       </aside>
 
       {/* ══════════ GOOGLE ADS — vertical skyscraper column (very wide screens) ══════════ */}
