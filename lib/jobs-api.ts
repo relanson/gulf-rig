@@ -70,6 +70,22 @@ function isNoise(title: string): boolean {
   return /assignments?\s+abroad\s+times/i.test(title) || title.trim().length < 6;
 }
 
+// Oil & gas role/industry keywords. Used when BROWSING latest posts (no search
+// query) to keep the home feed on-topic — blogs also post nursing/retail/etc.
+const RELEVANT = [
+  "oil", "gas", "refinery", "refineries", "petrochem", "petroleum", "fertilizer",
+  "lng", "fpso", "offshore", "onshore", "rig", "drilling", "shutdown", "turnaround",
+  "commission", "plant", "pipeline", "piping", "instrument", "mechanical",
+  "electrical", "welder", "fitter", "rigger", "scaffolder", "technician", "foreman",
+  "supervisor", "rotating", "qa/qc", "qaqc", "ndt", "inspector", "hse", "safety",
+  "fabricat", "construction", "maintenance", "process", "operator", "engineer",
+  "millwright", "boiler", "valve", "turbine", "compressor", "epc", "petrochemical",
+];
+function isRelevant(title: string, snippet = ""): boolean {
+  const hay = `${title} ${snippet}`.toLowerCase();
+  return RELEVANT.some((k) => hay.includes(k));
+}
+
 async function fetchWithTimeout(url: string): Promise<Response> {
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), FETCH_TIMEOUT_MS);
@@ -84,11 +100,8 @@ async function fetchWithTimeout(url: string): Promise<Response> {
   }
 }
 
-async function searchWordpress(src: FeedSource, q: string, page: number): Promise<SearchResult[]> {
-  const url = `${src.base}/?s=${encodeURIComponent(q)}&feed=rss2&paged=${page}`;
-  const res = await fetchWithTimeout(url);
-  if (!res.ok) return [];
-  const xml = await res.text();
+/** Parse a WordPress RSS2 feed body into normalized results. */
+function parseWordpressXml(xml: string, src: FeedSource): SearchResult[] {
   const items = [...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)].slice(0, PER_SOURCE);
   return items.map((m) => {
     const block = m[1];
@@ -110,14 +123,10 @@ async function searchWordpress(src: FeedSource, q: string, page: number): Promis
   }).filter((r) => r.applyUrl && !isNoise(r.jobTitle));
 }
 
-async function searchBlogger(src: FeedSource, q: string, page: number): Promise<SearchResult[]> {
-  const start = (page - 1) * PER_SOURCE + 1;
-  const url = `${src.base}/feeds/posts/default?q=${encodeURIComponent(q)}&alt=json&max-results=${PER_SOURCE}&start-index=${start}`;
-  const res = await fetchWithTimeout(url);
-  if (!res.ok) return [];
-  const json = await res.json();
-  const entries = json?.feed?.entry || [];
-  return entries.map((e: Record<string, unknown>): SearchResult => {
+/** Parse a Blogger JSON feed body into normalized results. */
+function parseBloggerJson(json: unknown, src: FeedSource): SearchResult[] {
+  const entries = (json as { feed?: { entry?: Record<string, unknown>[] } })?.feed?.entry || [];
+  return entries.map((e): SearchResult => {
     const title = decodeAndStrip((e.title as { $t?: string })?.$t || "");
     const links = (e.link as { rel: string; href: string }[]) || [];
     const link  = links.find((l) => l.rel === "alternate")?.href || "";
@@ -134,6 +143,38 @@ async function searchBlogger(src: FeedSource, q: string, page: number): Promise<
       updated: updated || undefined,
     };
   }).filter((r: SearchResult) => r.applyUrl && !isNoise(r.jobTitle));
+}
+
+async function searchWordpress(src: FeedSource, q: string, page: number): Promise<SearchResult[]> {
+  const url = `${src.base}/?s=${encodeURIComponent(q)}&feed=rss2&paged=${page}`;
+  const res = await fetchWithTimeout(url);
+  if (!res.ok) return [];
+  return parseWordpressXml(await res.text(), src);
+}
+
+async function searchBlogger(src: FeedSource, q: string, page: number): Promise<SearchResult[]> {
+  const start = (page - 1) * PER_SOURCE + 1;
+  const url = `${src.base}/feeds/posts/default?q=${encodeURIComponent(q)}&alt=json&max-results=${PER_SOURCE}&start-index=${start}`;
+  const res = await fetchWithTimeout(url);
+  if (!res.ok) return [];
+  return parseBloggerJson(await res.json(), src);
+}
+
+// ── Browse: pull LATEST posts (no query) for the home-feed "More jobs" section ──
+
+async function browseWordpress(src: FeedSource, page: number): Promise<SearchResult[]> {
+  const url = `${src.base}/feed/?paged=${page}`;
+  const res = await fetchWithTimeout(url);
+  if (!res.ok) return [];
+  return parseWordpressXml(await res.text(), src);
+}
+
+async function browseBlogger(src: FeedSource, page: number): Promise<SearchResult[]> {
+  const start = (page - 1) * PER_SOURCE + 1;
+  const url = `${src.base}/feeds/posts/default?alt=json&max-results=${PER_SOURCE}&start-index=${start}`;
+  const res = await fetchWithTimeout(url);
+  if (!res.ok) return [];
+  return parseBloggerJson(await res.json(), src);
 }
 
 /**
@@ -173,5 +214,54 @@ export async function searchWebJobs(
 
   // A full page from any source suggests more may exist.
   const hasMore = perSource.some((a) => a.length >= PER_SOURCE);
+  return { results, hasMore };
+}
+
+// Cap how deep the home-feed browse can scroll (each blog's feed is finite).
+const MAX_BROWSE_PAGE = 10;
+
+/**
+ * Browse the latest oil & gas posts across all feed sources (no search query).
+ * Powers the "More Oil & Gas Jobs from Around the Gulf" home-feed section.
+ * Interleaves + dedupes like searchWebJobs, plus an on-topic relevance filter.
+ */
+export async function browseWebJobs(
+  page: number
+): Promise<{ results: SearchResult[]; hasMore: boolean }> {
+  if (page > MAX_BROWSE_PAGE) return { results: [], hasMore: false };
+
+  const settled = await Promise.allSettled(
+    SOURCES.map((src) =>
+      src.type === "wordpress" ? browseWordpress(src, page) : browseBlogger(src, page)
+    )
+  );
+
+  const ok = settled.filter((s) => s.status === "fulfilled");
+  if (ok.length === 0) throw new Error("All feed sources failed");
+
+  const perSource = ok.map((s) =>
+    (s as PromiseFulfilledResult<SearchResult[]>).value.filter((r) => isRelevant(r.jobTitle, r.snippet))
+  );
+
+  // Interleave so no single blog dominates.
+  const merged: SearchResult[] = [];
+  const maxLen = Math.max(0, ...perSource.map((a) => a.length));
+  for (let i = 0; i < maxLen; i++) {
+    for (const arr of perSource) if (arr[i]) merged.push(arr[i]);
+  }
+
+  // Dedupe by apply URL.
+  const seen = new Set<string>();
+  const results = merged.filter((r) => {
+    if (seen.has(r.applyUrl)) return false;
+    seen.add(r.applyUrl);
+    return true;
+  });
+
+  // More pages likely exist if any source returned a full page AND we're under the cap.
+  const rawHasMore = ok.some(
+    (s) => (s as PromiseFulfilledResult<SearchResult[]>).value.length >= PER_SOURCE
+  );
+  const hasMore = rawHasMore && page < MAX_BROWSE_PAGE;
   return { results, hasMore };
 }

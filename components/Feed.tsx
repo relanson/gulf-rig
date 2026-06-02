@@ -1,11 +1,21 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Briefcase, PlusCircle, Shield, Anchor, Flame } from "lucide-react";
+import { Briefcase, PlusCircle, Shield, Anchor, Flame, Globe } from "lucide-react";
 import Link from "next/link";
 import JobCard from "./JobCard";
 import AdBanner from "./AdBanner";
-import { PROJECT_TYPES, getProjectLabel } from "@/lib/constants";
+import WebJobCard, { type WebJobResult } from "./WebJobCard";
+import { PROJECT_TYPES, getProjectLabel, getProjectType } from "@/lib/constants";
+
+// Search query used when a project-type term is clicked (runs local + feed search).
+const PT_QUERY: Record<string, string> = {
+  construction: "Construction",
+  pre_commissioning: "Commissioning",
+  maintenance: "Maintenance",
+  shutdown: "Shutdown",
+  other: "Oil & Gas",
+};
 
 interface Job {
   id: string; jobTitle: string; description: string | null;
@@ -25,11 +35,19 @@ export default function Feed() {
   const [loading,     setLoading]     = useState(false);
   const [initialLoad, setInitialLoad] = useState(true);
   const [filter,      setFilter]      = useState("all");
+
+  // ── Phase 2: aggregated "More jobs from around the Gulf" (only on filter==="all") ──
+  const [webJobs,     setWebJobs]     = useState<WebJobResult[]>([]);
+  const [webPage,     setWebPage]     = useState(1);
+  const [webHasMore,  setWebHasMore]  = useState(true);
+  const [webLoading,  setWebLoading]  = useState(false);
+
   const sentinelRef  = useRef<HTMLDivElement>(null);
   const observerRef  = useRef<IntersectionObserver | null>(null);
+  // Holds the latest loadMore so the once-created observer never goes stale.
+  const loadMoreRef  = useRef<() => void>(() => {});
 
   const fetchJobs = useCallback(async (pageNum: number, filterVal: string, reset = false) => {
-    if (loading) return;
     setLoading(true);
     try {
       const p = new URLSearchParams({ page: String(pageNum), limit: "10" });
@@ -40,28 +58,59 @@ export default function Feed() {
       setPage(pageNum + 1);
     } catch (e) { console.error(e); }
     finally { setLoading(false); setInitialLoad(false); }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const fetchWebJobs = useCallback(async (pageNum: number) => {
+    setWebLoading(true);
+    try {
+      const data = await fetch(`/api/web-jobs?page=${pageNum}`).then((r) => r.json());
+      const incoming: WebJobResult[] = data.results || [];
+      setWebJobs((prev) => {
+        const seen = new Set(prev.map((r) => r.applyUrl));
+        return [...prev, ...incoming.filter((r) => !seen.has(r.applyUrl))];
+      });
+      setWebHasMore(Boolean(data.available) && Boolean(data.hasMore));
+      setWebPage(pageNum + 1);
+    } catch (e) { console.error(e); setWebHasMore(false); }
+    finally { setWebLoading(false); }
   }, []);
 
   useEffect(() => {
     setPage(1); setJobs([]); setHasMore(true);
+    setWebJobs([]); setWebPage(1); setWebHasMore(true);
     fetchJobs(1, filter, true);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filter]);
 
+  // Decide what to load next: own jobs first, then aggregated web jobs (all view).
+  loadMoreRef.current = () => {
+    if (loading || webLoading) return;
+    if (hasMore) { fetchJobs(page, filter); return; }
+    if (filter === "all" && webHasMore) { fetchWebJobs(webPage); }
+  };
+
+  // Observer is created exactly once and always calls the latest loadMore.
   useEffect(() => {
-    if (observerRef.current) observerRef.current.disconnect();
     observerRef.current = new IntersectionObserver(
-      (e) => { if (e[0].isIntersecting && hasMore && !loading) fetchJobs(page, filter); },
+      (e) => { if (e[0].isIntersecting) loadMoreRef.current(); },
       { rootMargin: "400px" }
     );
     if (sentinelRef.current) observerRef.current.observe(sentinelRef.current);
     return () => observerRef.current?.disconnect();
-  }, [hasMore, loading, page, filter, fetchJobs]);
+  }, []);
 
-  const counts = Object.fromEntries(
-    PROJECT_TYPES.map((pt) => [pt.value, jobs.filter((j) => j.projectType === pt.value).length])
-  );
+  // The observer only fires on intersection *changes*. After a load settles, if
+  // the sentinel is still in view (e.g. phase 1 → phase 2 hand-off, or short
+  // content), nudge the next load manually.
+  useEffect(() => {
+    if (loading || webLoading) return;
+    const el = sentinelRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const inView = rect.top < window.innerHeight + 400 && rect.bottom > -400;
+    if (inView) loadMoreRef.current();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, webLoading, hasMore, webHasMore, jobs.length, webJobs.length, filter]);
 
   if (initialLoad) {
     return (
@@ -86,16 +135,9 @@ export default function Feed() {
         <p className="px-3 py-1 text-xs font-bold uppercase tracking-wider" style={{ color: "var(--fb-secondary)" }}>
           Project Type
         </p>
-        <SidebarFilter label="All Projects" active={filter === "all"} onClick={() => setFilter("all")} dot="#65676B" count={jobs.length} />
+        <SidebarFilter label="All Projects" active={filter === "all"} onClick={() => setFilter("all")} dot="#65676B" />
         {PROJECT_TYPES.map((pt) => (
-          <SidebarFilter
-            key={pt.value}
-            label={pt.label}
-            active={filter === pt.value}
-            onClick={() => setFilter(pt.value)}
-            dot={pt.color}
-            count={counts[pt.value] ?? 0}
-          />
+          <SidebarTermLink key={pt.value} label={pt.label} query={PT_QUERY[pt.value] ?? pt.label} dot={pt.color} />
         ))}
 
         <hr className="my-2" style={{ borderColor: "var(--fb-border)" }} />
@@ -125,7 +167,7 @@ export default function Feed() {
         </div>
 
         {/* Feed */}
-        {jobs.length === 0 && !loading ? (
+        {jobs.length === 0 && webJobs.length === 0 && !loading && !webLoading ? (
           <div className="bg-white rounded-xl p-10 text-center" style={{ border: "1px solid var(--fb-border)" }}>
             <Briefcase className="w-12 h-12 mx-auto mb-3" style={{ color: "var(--fb-secondary)" }} />
             <h3 className="font-bold text-lg mb-1">No Jobs Found</h3>
@@ -138,16 +180,49 @@ export default function Feed() {
           </div>
         ) : (
           <>
-            {jobs.map((job) => <JobCard key={job.id} job={job} />)}
-            <div ref={sentinelRef} className="h-2" />
+            {/* Phase 1 — Gulf-Rig's own posted jobs (primary content) */}
+            <div className="flex flex-col gap-3">
+              {jobs.map((job) => <JobCard key={job.id} job={job} />)}
+            </div>
+
             {loading && (
               <div className="flex justify-center py-6">
                 <div className="w-6 h-6 rounded-full border-4 border-t-transparent animate-spin" style={{ borderColor: "var(--fb-blue) transparent var(--fb-blue) var(--fb-blue)" }} />
               </div>
             )}
-            {!hasMore && jobs.length > 0 && (
+
+            {/* Phase 2 — aggregated listings from across the Gulf (all view only) */}
+            {filter === "all" && !hasMore && (webJobs.length > 0 || webLoading) && (
+              <div className="mt-4">
+                <div className="flex items-center gap-3 mb-3 px-1">
+                  <div className="flex-1 h-px" style={{ background: "var(--fb-border)" }} />
+                  <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider" style={{ color: "var(--fb-secondary)" }}>
+                    <Globe className="w-3.5 h-3.5" /> More Oil &amp; Gas Jobs from Around the Gulf
+                  </span>
+                  <div className="flex-1 h-px" style={{ background: "var(--fb-border)" }} />
+                </div>
+                <p className="text-center text-[11px] mb-3 px-4" style={{ color: "var(--fb-secondary)" }}>
+                  Aggregated listings from public recruitment feeds — each opens the original posting.
+                </p>
+                <div className="flex flex-col gap-3">
+                  {webJobs.map((r, i) => <WebJobCard key={`web-${r.applyUrl}-${i}`} r={r} />)}
+                </div>
+              </div>
+            )}
+
+            {/* Shared sentinel — drives both phases */}
+            <div ref={sentinelRef} className="h-2" />
+
+            {webLoading && (
+              <div className="flex justify-center py-6">
+                <div className="w-6 h-6 rounded-full border-4 border-t-transparent animate-spin" style={{ borderColor: "var(--fb-blue) transparent var(--fb-blue) var(--fb-blue)" }} />
+              </div>
+            )}
+
+            {/* All caught up — only once both phases are exhausted */}
+            {!loading && !webLoading && !hasMore && (filter !== "all" || !webHasMore) && (jobs.length > 0 || webJobs.length > 0) && (
               <p className="text-center text-sm py-6" style={{ color: "var(--fb-secondary)" }}>
-                ✓ You&apos;re all caught up · {jobs.length} jobs shown
+                ✓ You&apos;re all caught up · {jobs.length + webJobs.length} jobs shown
               </p>
             )}
           </>
@@ -159,30 +234,29 @@ export default function Feed() {
       {/* ══════════ RIGHT PANEL ══════════ */}
       <aside className="hidden xl:flex flex-col gap-3 w-[360px] shrink-0 px-3 py-4 sticky top-[56px] h-[calc(100vh-56px)] overflow-y-auto no-scrollbar">
 
-        {/* Today's Openings by category */}
+        {/* Today's Openings — live job titles, each runs a local + feed search */}
         <div className="bg-white rounded-xl p-4" style={{ border: "1px solid var(--fb-border)", boxShadow: "0 1px 2px rgba(0,0,0,.1)" }}>
           <p className="font-bold text-base mb-3">Today&apos;s Openings</p>
-          <div className="flex flex-col gap-2">
-            {PROJECT_TYPES.map((pt) => (
-              <button
-                key={pt.value}
-                onClick={() => setFilter(filter === pt.value ? "all" : pt.value)}
-                className="flex items-center gap-3 p-2.5 rounded-xl transition-colors text-left w-full"
-                style={{ background: filter === pt.value ? "var(--fb-blue-light)" : "var(--fb-bg)" }}
-              >
-                <span className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0" style={{ background: pt.color }}>
-                  {pt.label.charAt(0)}
-                </span>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold truncate">{pt.label}</p>
-                  <p className="text-xs" style={{ color: "var(--fb-secondary)" }}>{counts[pt.value] ?? 0} jobs</p>
-                </div>
-                {filter === pt.value && (
-                  <span className="w-2 h-2 rounded-full shrink-0" style={{ background: "var(--fb-blue)" }} />
-                )}
-              </button>
-            ))}
-          </div>
+          {jobs.length === 0 ? (
+            <p className="text-sm" style={{ color: "var(--fb-secondary)" }}>No openings yet — check back soon.</p>
+          ) : (
+            <div className="flex flex-col">
+              {jobs.map((job) => (
+                <Link
+                  key={job.id}
+                  href={`/search?q=${encodeURIComponent(job.jobTitle)}`}
+                  className="flex items-start gap-2.5 py-2 px-1 rounded-lg transition-colors"
+                  onMouseEnter={(e) => { e.currentTarget.style.background = "var(--fb-hover)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+                >
+                  <span className="w-2.5 h-2.5 rounded-full shrink-0 mt-1.5" style={{ background: getProjectType(job.projectType).color }} />
+                  <span className="flex-1 min-w-0 text-sm font-medium leading-snug" style={{ color: "var(--fb-text)" }}>
+                    {job.jobTitle}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* ── Google Ad #1 — below Today's Openings ── */}
@@ -214,8 +288,8 @@ function SidebarLink({ href, icon, label, active, onClick }: {
   );
 }
 
-function SidebarFilter({ label, active, onClick, dot, count }: {
-  label: string; active: boolean; onClick: () => void; dot: string; count: number;
+function SidebarFilter({ label, active, onClick, dot }: {
+  label: string; active: boolean; onClick: () => void; dot: string;
 }) {
   return (
     <button onClick={onClick}
@@ -226,8 +300,21 @@ function SidebarFilter({ label, active, onClick, dot, count }: {
     >
       <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: dot }} />
       <span className="flex-1 font-medium text-sm truncate" style={{ color: active ? "var(--fb-blue)" : "var(--fb-text)" }}>{label}</span>
-      <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: "var(--fb-bg)", color: "var(--fb-secondary)" }}>{count}</span>
     </button>
+  );
+}
+
+/** Project-type term that navigates to a combined local + feed search. */
+function SidebarTermLink({ label, query, dot }: { label: string; query: string; dot: string }) {
+  return (
+    <Link href={`/search?q=${encodeURIComponent(query)}`}
+      className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors w-full text-left"
+      onMouseEnter={(e) => { e.currentTarget.style.background = "var(--fb-hover)"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+    >
+      <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: dot }} />
+      <span className="flex-1 font-medium text-sm truncate" style={{ color: "var(--fb-text)" }}>{label}</span>
+    </Link>
   );
 }
 
