@@ -31,6 +31,7 @@ const SOURCES: FeedSource[] = [
   { name: "Assignments Abroad Times", base: "https://assignmentsabroadtimes.in", type: "wordpress" },
   { name: "Gulf Job Find",            base: "https://www.gulfjobfind.com",        type: "blogger" },
   { name: "Connecting Abroad",        base: "https://www.connectingabroad.online", type: "blogger" },
+  { name: "Gulf Job Paper",           base: "https://www.gulfjobpaper.com",        type: "wordpress" },
 ];
 
 const PER_SOURCE = 10;
@@ -66,7 +67,7 @@ function detectLocation(title: string): string {
 
 /** Skip daily-roundup / index posts that match everything. */
 function isNoise(title: string): boolean {
-  return /assignment abroad times\s*[–-]/i.test(title) || title.trim().length < 6;
+  return /assignments?\s+abroad\s+times/i.test(title) || title.trim().length < 6;
 }
 
 async function fetchWithTimeout(url: string): Promise<Response> {
