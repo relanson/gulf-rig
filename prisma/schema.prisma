@@ -46,3 +46,14 @@ model JobApplication {
   message    String?
   appliedAt  DateTime @default(now())
 }
+
+// Caches external job-API search results to protect free-tier quota.
+// `id` is the cache key: `${normalizedQuery}::${page}`.
+model SearchCache {
+  id         String   @id
+  query      String
+  page       Int      @default(1)
+  results    String   // JSON array string of normalized web results
+  totalCount Int      @default(0)
+  fetchedAt  DateTime @default(now())
+}

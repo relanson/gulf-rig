@@ -46,6 +46,15 @@ await client.batch([
     "appliedAt"  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY ("jobPostId") REFERENCES "JobPost" ("id") ON DELETE CASCADE
   )`,
+
+  `CREATE TABLE IF NOT EXISTS "SearchCache" (
+    "id"         TEXT     NOT NULL PRIMARY KEY,
+    "query"      TEXT     NOT NULL,
+    "page"       INTEGER  NOT NULL DEFAULT 1,
+    "results"    TEXT     NOT NULL,
+    "totalCount" INTEGER  NOT NULL DEFAULT 0,
+    "fetchedAt"  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+  )`,
 ], "write");
 
 console.log("✅ Tables created successfully on Turso!");
