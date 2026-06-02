@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowLeft, MapPin, Building2, DollarSign, GraduationCap,
@@ -122,27 +121,29 @@ export default function JobDetailPage() {
 
             {/* Image carousel or gradient */}
             {images.length > 0 ? (
-              <div className="relative w-full" style={{ aspectRatio: "16/9" }}>
-                <Image src={images[imgIndex]} alt={job.jobTitle} fill className="object-cover" onError={() => setImgError(true)} priority />
+              <div className="relative w-full" style={{ background: "#000" }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={images[imgIndex]}
+                  alt={job.jobTitle}
+                  className="w-full block"
+                  style={{ maxHeight: "700px", objectFit: "contain" }}
+                  onError={() => setImgError(true)}
+                />
                 {images.length > 1 && (
                   <>
                     <button onClick={() => setImgIndex(i => (i - 1 + images.length) % images.length)}
-                      className="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center shadow-md"
-                      style={{ background: "rgba(0,0,0,0.55)", color: "#fff" }}>
-                      ‹
-                    </button>
+                      className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full flex items-center justify-center shadow-md"
+                      style={{ background: "rgba(0,0,0,0.6)", color: "#fff" }}>‹</button>
                     <button onClick={() => setImgIndex(i => (i + 1) % images.length)}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full flex items-center justify-center shadow-md"
-                      style={{ background: "rgba(0,0,0,0.55)", color: "#fff" }}>
-                      ›
-                    </button>
-                    <span className="absolute bottom-2 right-2 text-xs font-bold text-white px-2 py-0.5 rounded-full" style={{ background: "rgba(0,0,0,0.55)" }}>
+                      className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full flex items-center justify-center shadow-md"
+                      style={{ background: "rgba(0,0,0,0.6)", color: "#fff" }}>›</button>
+                    <span className="absolute bottom-2 right-2 text-xs font-bold text-white px-2 py-0.5 rounded-full" style={{ background: "rgba(0,0,0,0.6)" }}>
                       {imgIndex + 1}/{images.length}
                     </span>
                     <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
                       {images.map((_, i) => (
-                        <button key={i} onClick={() => setImgIndex(i)}
-                          className="w-2 h-2 rounded-full transition-all"
+                        <button key={i} onClick={() => setImgIndex(i)} className="w-2 h-2 rounded-full transition-all"
                           style={{ background: i === imgIndex ? "#fff" : "rgba(255,255,255,0.5)" }} />
                       ))}
                     </div>
