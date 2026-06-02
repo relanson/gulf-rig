@@ -180,12 +180,11 @@ export default function Feed() {
         </div>
 
         {/* ── Google Ad #1 — below Today's Openings ── */}
-        {/* ✏️ Replace adSlot with your real slot ID from AdSense dashboard */}
-        <AdBanner adSlot="1111111111" />
+        {/* ✏️ Get slot IDs: AdSense dashboard → Ads → By ad unit → Create ad unit */}
+        <AdBanner adSlot="1111111111" adClient="ca-pub-1550416832618336" />
 
         {/* ── Google Ad #2 — bottom of sidebar ── */}
-        {/* ✏️ Replace adSlot with your second slot ID */}
-        <AdBanner adSlot="2222222222" />
+        <AdBanner adSlot="2222222222" adClient="ca-pub-1550416832618336" />
 
       </aside>
     </div>

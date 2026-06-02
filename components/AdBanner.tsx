@@ -5,7 +5,7 @@ import { useEffect, useRef } from "react";
 interface AdBannerProps {
   /** ✏️ Replace with your real Ad Slot ID from Google AdSense */
   adSlot: string;
-  /** ✏️ Replace with your real Publisher ID  e.g. ca-pub-XXXXXXXXXXXXXXXXX */
+  /** ✏️ Replace with your real Publisher ID  e.g. ca-pub-1550416832618336 */
   adClient?: string;
   adFormat?: string;
   fullWidthResponsive?: boolean;
@@ -14,7 +14,7 @@ interface AdBannerProps {
 
 export default function AdBanner({
   adSlot,
-  adClient = "ca-pub-XXXXXXXXXXXXXXXXX", // ✏️ Replace with your Publisher ID
+  adClient = "ca-pub-1550416832618336", // ✏️ Replace with your Publisher ID
   adFormat = "auto",
   fullWidthResponsive = true,
   style,

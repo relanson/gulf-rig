@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 };
 
 // ✏️  Replace with your real AdSense Publisher ID once your site is approved.
-const ADSENSE_PUB_ID = "ca-pub-XXXXXXXXXXXXXXXXX";
+const ADSENSE_PUB_ID = "ca-pub-1550416832618336";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
