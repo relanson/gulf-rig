@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import {
   MapPin, DollarSign, GraduationCap, Clock,
-  ChevronRight, ChevronLeft, MoreHorizontal, Factory, Mail, Phone, X, ExternalLink, Send,
+  ChevronRight, ChevronLeft, MoreHorizontal, Factory, Mail, Phone, X, ExternalLink,
 } from "lucide-react";
 import { getProjectType, getProjectLabel, getIndustryLabel } from "@/lib/constants";
 
@@ -193,7 +193,7 @@ export default function JobCard({ job }: { job: Job }) {
             onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>
             View Details <ChevronRight className="w-4 h-4" />
           </Link>
-          {isExternal ? (
+          {isExternal && (
             <a href={src} target="_blank" rel="noopener noreferrer"
               className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-sm font-bold text-white transition-all"
               style={{ background: "var(--fb-blue)" }}
@@ -201,14 +201,6 @@ export default function JobCard({ job }: { job: Job }) {
               onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}>
               Apply Now <ExternalLink className="w-3.5 h-3.5" />
             </a>
-          ) : (
-            <Link href={`/job/${job.id}?apply=1`}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-sm font-bold text-white transition-all"
-              style={{ background: "var(--fb-blue)" }}
-              onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.9")}
-              onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}>
-              Apply Now <Send className="w-3.5 h-3.5" />
-            </Link>
           )}
         </div>
       </article>
