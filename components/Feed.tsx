@@ -1,11 +1,10 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Briefcase, PlusCircle, Shield, Anchor, Flame, Globe } from "lucide-react";
+import { Briefcase, PlusCircle, Shield, Anchor, Flame } from "lucide-react";
 import Link from "next/link";
 import JobCard from "./JobCard";
 import AdBanner from "./AdBanner";
-import WebJobCard, { type WebJobResult } from "./WebJobCard";
 import { PROJECT_TYPES, getProjectLabel } from "@/lib/constants";
 
 // Search query used when a project-type term is clicked (runs local + feed search).
@@ -45,12 +44,6 @@ export default function Feed() {
   const [initialLoad, setInitialLoad] = useState(true);
   const [filter,      setFilter]      = useState("all");
 
-  // ── Phase 2: aggregated "More jobs from around the Gulf" (only on filter==="all") ──
-  const [webJobs,     setWebJobs]     = useState<WebJobResult[]>([]);
-  const [webPage,     setWebPage]     = useState(1);
-  const [webHasMore,  setWebHasMore]  = useState(true);
-  const [webLoading,  setWebLoading]  = useState(false);
-
   const sentinelRef  = useRef<HTMLDivElement>(null);
   const observerRef  = useRef<IntersectionObserver | null>(null);
   // Holds the latest loadMore so the once-created observer never goes stale.
@@ -69,33 +62,16 @@ export default function Feed() {
     finally { setLoading(false); setInitialLoad(false); }
   }, []);
 
-  const fetchWebJobs = useCallback(async (pageNum: number) => {
-    setWebLoading(true);
-    try {
-      const data = await fetch(`/api/web-jobs?page=${pageNum}`).then((r) => r.json());
-      const incoming: WebJobResult[] = data.results || [];
-      setWebJobs((prev) => {
-        const seen = new Set(prev.map((r) => r.applyUrl));
-        return [...prev, ...incoming.filter((r) => !seen.has(r.applyUrl))];
-      });
-      setWebHasMore(Boolean(data.available) && Boolean(data.hasMore));
-      setWebPage(pageNum + 1);
-    } catch (e) { console.error(e); setWebHasMore(false); }
-    finally { setWebLoading(false); }
-  }, []);
-
   useEffect(() => {
     setPage(1); setJobs([]); setHasMore(true);
-    setWebJobs([]); setWebPage(1); setWebHasMore(true);
     fetchJobs(1, filter, true);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filter]);
 
-  // Decide what to load next: own jobs first, then aggregated web jobs (all view).
+  // Load more of Gulf-Rig's own posted jobs as the user scrolls.
   loadMoreRef.current = () => {
-    if (loading || webLoading) return;
-    if (hasMore) { fetchJobs(page, filter); return; }
-    if (filter === "all" && webHasMore) { fetchWebJobs(webPage); }
+    if (loading) return;
+    if (hasMore) fetchJobs(page, filter);
   };
 
   // Observer is created exactly once and always calls the latest loadMore.
@@ -112,14 +88,14 @@ export default function Feed() {
   // the sentinel is still in view (e.g. phase 1 → phase 2 hand-off, or short
   // content), nudge the next load manually.
   useEffect(() => {
-    if (loading || webLoading) return;
+    if (loading) return;
     const el = sentinelRef.current;
     if (!el) return;
     const rect = el.getBoundingClientRect();
     const inView = rect.top < window.innerHeight + 400 && rect.bottom > -400;
     if (inView) loadMoreRef.current();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading, webLoading, hasMore, webHasMore, jobs.length, webJobs.length, filter]);
+  }, [loading, hasMore, jobs.length, filter]);
 
   if (initialLoad) {
     return (
@@ -176,7 +152,7 @@ export default function Feed() {
         </div>
 
         {/* Feed */}
-        {jobs.length === 0 && webJobs.length === 0 && !loading && !webLoading ? (
+        {jobs.length === 0 && !loading ? (
           <div className="bg-white rounded-xl p-10 text-center" style={{ border: "1px solid var(--fb-border)" }}>
             <Briefcase className="w-12 h-12 mx-auto mb-3" style={{ color: "var(--fb-secondary)" }} />
             <h3 className="font-bold text-lg mb-1">No Jobs Found</h3>
@@ -200,38 +176,13 @@ export default function Feed() {
               </div>
             )}
 
-            {/* Phase 2 — aggregated listings from across the Gulf (all view only) */}
-            {filter === "all" && !hasMore && (webJobs.length > 0 || webLoading) && (
-              <div className="mt-4">
-                <div className="flex items-center gap-3 mb-3 px-1">
-                  <div className="flex-1 h-px" style={{ background: "var(--fb-border)" }} />
-                  <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider" style={{ color: "var(--fb-secondary)" }}>
-                    <Globe className="w-3.5 h-3.5" /> More Oil &amp; Gas Jobs from Around the Gulf
-                  </span>
-                  <div className="flex-1 h-px" style={{ background: "var(--fb-border)" }} />
-                </div>
-                <p className="text-center text-[11px] mb-3 px-4" style={{ color: "var(--fb-secondary)" }}>
-                  Aggregated listings from public recruitment feeds — each opens the original posting.
-                </p>
-                <div className="flex flex-col gap-3">
-                  {webJobs.map((r, i) => <WebJobCard key={`web-${r.applyUrl}-${i}`} r={r} />)}
-                </div>
-              </div>
-            )}
-
-            {/* Shared sentinel — drives both phases */}
+            {/* Infinite-scroll sentinel */}
             <div ref={sentinelRef} className="h-2" />
 
-            {webLoading && (
-              <div className="flex justify-center py-6">
-                <div className="w-6 h-6 rounded-full border-4 border-t-transparent animate-spin" style={{ borderColor: "var(--fb-blue) transparent var(--fb-blue) var(--fb-blue)" }} />
-              </div>
-            )}
-
-            {/* All caught up — only once both phases are exhausted */}
-            {!loading && !webLoading && !hasMore && (filter !== "all" || !webHasMore) && (jobs.length > 0 || webJobs.length > 0) && (
+            {/* All caught up */}
+            {!loading && !hasMore && jobs.length > 0 && (
               <p className="text-center text-sm py-6" style={{ color: "var(--fb-secondary)" }}>
-                ✓ You&apos;re all caught up · {jobs.length + webJobs.length} jobs shown
+                ✓ You&apos;re all caught up · {jobs.length} jobs shown
               </p>
             )}
           </>
