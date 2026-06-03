@@ -74,15 +74,17 @@ export default function Feed() {
     if (hasMore) fetchJobs(page, filter);
   };
 
-  // Observer is created exactly once and always calls the latest loadMore.
+  // Observer attaches once the sentinel is actually in the DOM. It is hidden
+  // behind `initialLoad`, so re-run when that flips so observe() sees a real node.
   useEffect(() => {
+    if (initialLoad) return;
     observerRef.current = new IntersectionObserver(
       (e) => { if (e[0].isIntersecting) loadMoreRef.current(); },
       { rootMargin: "400px" }
     );
     if (sentinelRef.current) observerRef.current.observe(sentinelRef.current);
     return () => observerRef.current?.disconnect();
-  }, []);
+  }, [initialLoad]);
 
   // The observer only fires on intersection *changes*. After a load settles, if
   // the sentinel is still in view (e.g. phase 1 → phase 2 hand-off, or short

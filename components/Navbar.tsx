@@ -23,9 +23,15 @@ export default function Navbar() {
         className="fixed top-0 left-0 right-0 z-50 bg-white flex items-center px-4 gap-2"
         style={{ height: "var(--fb-nav-h)", borderBottom: "1px solid var(--fb-border)", boxShadow: "0 2px 4px rgba(0,0,0,.1)" }}
       >
-        {/* Left: Logo */}
+        {/* Left: Logo — acts as Home; scrolls to top if already on the feed */}
         <div className="flex items-center shrink-0">
-          <Link href="/" className="flex items-center gap-1.5">
+          <Link
+            href="/"
+            className="flex items-center gap-1.5"
+            onClick={() => {
+              if (pathname === "/") window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
+          >
             <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: "var(--fb-blue)" }}>
               <Flame className="w-5 h-5 text-white" />
             </div>
