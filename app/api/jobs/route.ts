@@ -31,13 +31,10 @@ export async function POST(req: NextRequest) {
     if (!body.posterName?.trim()) {
       return NextResponse.json({ error: "Please enter your name." }, { status: 400 });
     }
-    // Without photos: company and email are also required
+    // Without photos: company name is required (email is optional — never required)
     if (!hasImage) {
       if (!body.companyName?.trim()) {
         return NextResponse.json({ error: "Please enter the company or employer name." }, { status: 400 });
-      }
-      if (!body.posterEmail?.trim()) {
-        return NextResponse.json({ error: "Please enter your email address." }, { status: 400 });
       }
     }
 
