@@ -5,9 +5,10 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowLeft, MapPin, Building2, DollarSign, GraduationCap,
-  Clock, Flame, Calendar, HardHat, ThumbsUp, Mail, Phone, User, Factory, ExternalLink,
+  Clock, Flame, Calendar, HardHat, ThumbsUp, Mail, Phone, User, Factory, ExternalLink, Send,
 } from "lucide-react";
 import { getProjectType, getProjectLabel, getIndustryLabel, getGradient } from "@/lib/constants";
+import ApplyModal from "@/components/ApplyModal";
 
 interface Job {
   id: string; jobTitle: string; description: string | null;
@@ -41,12 +42,17 @@ export default function JobDetailPage() {
   const [interested,setInterested]= useState(false);
   const [imgError,  setImgError]  = useState(false);
   const [imgIndex,  setImgIndex]  = useState(0);
+  const [applyOpen, setApplyOpen] = useState(false);
 
   useEffect(() => {
     fetch(`/api/jobs/${id}`).then(r => r.json()).then(d => {
       if (d.error) router.push("/"); else setJob(d);
     }).finally(() => setLoading(false));
   }, [id, router]);
+
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("apply")) setApplyOpen(true);
+  }, []);
 
   if (loading) return (
     <div className="flex items-center justify-center min-h-screen gap-3" style={{ background: "var(--fb-bg)" }}>
@@ -61,6 +67,8 @@ export default function JobDetailPage() {
   const gradient = getGradient(0);
   const bg       = avatarColor(job.companyName);
   const initial  = job.companyName.charAt(0).toUpperCase();
+  const src        = job.sourceUrl?.trim() ?? "";
+  const isExternal = /^https?:\/\//i.test(src) && !src.includes("gulf-rig.com");
 
   // Parse multiple images
   const images: string[] = (() => {
@@ -186,14 +194,22 @@ export default function JobDetailPage() {
                 <ThumbsUp className="w-5 h-5" fill={interested ? "var(--fb-blue)" : "none"} style={{ color: interested ? "var(--fb-blue)" : "var(--fb-secondary)" }} />
                 Interested
               </button>
-              {job.sourceUrl && (
-                <a href={job.sourceUrl} target="_blank" rel="noopener noreferrer"
+              {isExternal ? (
+                <a href={src} target="_blank" rel="noopener noreferrer"
                   className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold text-white transition-opacity"
                   style={{ background: "var(--fb-blue)" }}
                   onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.9")}
                   onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}>
                   Apply Now <ExternalLink className="w-4 h-4" />
                 </a>
+              ) : (
+                <button onClick={() => setApplyOpen(true)}
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold text-white transition-opacity"
+                  style={{ background: "var(--fb-blue)" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.9")}
+                  onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}>
+                  Apply Now <Send className="w-4 h-4" />
+                </button>
               )}
             </div>
           </div>
@@ -253,6 +269,14 @@ export default function JobDetailPage() {
         </div>
       </div>
 
+      {applyOpen && (
+        <ApplyModal
+          jobId={job.id}
+          jobTitle={job.jobTitle}
+          companyName={job.companyName}
+          onClose={() => setApplyOpen(false)}
+        />
+      )}
     </>
   );
 }
