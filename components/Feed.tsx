@@ -109,7 +109,7 @@ export default function Feed() {
   }
 
   return (
-    <div className="flex min-h-screen pt-[56px] justify-center" style={{ background: "var(--fb-bg)" }}>
+    <div className="flex min-h-screen pt-[56px] justify-start" style={{ background: "var(--fb-bg)" }}>
 
       {/* ══════════ LEFT SIDEBAR ══════════ */}
       <aside className="hidden lg:flex flex-col gap-1 w-[280px] xl:w-[300px] shrink-0 px-3 py-4 sticky top-[56px] h-[calc(100vh-56px)] overflow-y-auto no-scrollbar">
@@ -229,8 +229,8 @@ export default function Feed() {
 
       </aside>
 
-      {/* ══════════ GOOGLE ADS — vertical skyscraper column (very wide screens) ══════════ */}
-      <aside className="hidden 2xl:flex flex-col w-[300px] shrink-0 px-3 py-4 sticky top-[56px] h-[calc(100vh-56px)]">
+      {/* ══════════ GOOGLE ADS — fills the freed right-hand space (wide screens) ══════════ */}
+      <aside className="hidden 2xl:flex flex-1 flex-col items-center min-w-[300px] px-3 py-4 sticky top-[56px] h-[calc(100vh-56px)]">
         {/* ✏️ Get slot IDs: AdSense dashboard → Ads → By ad unit → Create ad unit */}
         <AdBanner
           adSlot="2222222222"
